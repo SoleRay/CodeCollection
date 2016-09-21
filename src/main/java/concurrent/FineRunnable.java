@@ -17,6 +17,13 @@ public class FineRunnable implements Runnable {
 		t.start();
 	}
 	
+	/**
+	 * 
+	 * 以往的方式：
+	 * FineRunnable r = new FineRunnable();
+	 * Thread t = new Thread(r);
+	 * t.start();
+	 */
 	public static void main(String[] args) {
 		FineRunnable r = new FineRunnable();
 		r.start();
