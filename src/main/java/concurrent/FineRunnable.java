@@ -19,7 +19,7 @@ public class FineRunnable implements Runnable {
 	
 	/**
 	 * 
-	 * ÒÔÍùµÄ·½Ê½£º
+	 * åŸå…ˆçš„å†™æ³•
 	 * FineRunnable r = new FineRunnable();
 	 * Thread t = new Thread(r);
 	 * t.start();
