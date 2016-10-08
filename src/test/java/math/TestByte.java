@@ -14,7 +14,7 @@ public class TestByte {
 
     public static void testRemainLength() throws IOException {
         BitSet bitSet = new BitSet();
-//        for (int i = 0; i < 23; i++) {
+//        for (int i = 0; i < 7; i++) {
 //            bitSet.set(i);
 //        }
         bitSet.set(4);
