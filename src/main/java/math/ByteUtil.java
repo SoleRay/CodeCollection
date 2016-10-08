@@ -1,5 +1,7 @@
 package math;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.BitSet;
 
 public class ByteUtil {
@@ -27,16 +29,47 @@ public class ByteUtil {
 	    return finalValue;  
 	}
 
+	/**
+	 * if only one byte,for instance:
+	 * 0010 0111 => 0010 0111
+	 *
+	 * if two byte, for instance:
+	 * 0100 1100 1010 1111 => 0010 0110 0010 1111
+	 *
+	 * if three byte, for instance:
+	 * 0100 1100
+	 */
 	public static int calRemainLength(byte[] bytes){
 		if(bytes.length==0){
 			return 0;
 		}
 
-		int count = getMoveCount(bytes,0);
+		BitSet bitSet = byteArray2BitSet(bytes);
+		if(bitSet.get(7)){
+			for(int i=7;i<=14;i++){
+				bitSet.set(i,bitSet.get(i+1));
+			}
+			if(bitSet.get(15)){
+				for(int i=15;i<=22;i++){
+					bitSet.set(i,bitSet.get(i+1));
+				}
+				if(bitSet.get(23)){
+					for(int i=23;i<=30;i++){
+						bitSet.set(i,bitSet.get(i+1));
+					}
+				}
 
-		int value = bytesToInt(bytes, 0);
+			}
 
-		return (value>>>count);
+		}
+
+		byte[] result = bitSet.toByteArray();
+
+
+		int value = bytesToInt(result, 0);
+
+
+		return value;
 	}
 
 
@@ -91,4 +124,25 @@ public class ByteUtil {
 		}
 		return bitSet;
 	}
+
+	/**
+	 * another way to calculate remain length
+	 *
+	 */
+	protected static long readMBI(DataInputStream in) throws IOException {
+		byte digit;
+		long msgLength = 0;
+		int multiplier = 1;
+		int count = 0;
+
+		do {
+			digit = in.readByte();
+			count++;
+			msgLength += ((digit & 0x7F) * multiplier);
+			multiplier *= 128;
+		} while ((digit & 0x80) != 0);
+
+		return msgLength;
+	}
+
 }
