@@ -1,5 +1,7 @@
 package math;
 
+import java.util.BitSet;
+
 public class ByteUtil {
 
 	public static int bytesToInt(byte[] ary, int offset) {
@@ -76,5 +78,17 @@ public class ByteUtil {
 		}
 
 		return count;
+	}
+
+	public static BitSet byteArray2BitSet(byte[] bytes) {
+		BitSet bitSet = new BitSet(bytes.length * 8);
+		int index = 0;
+		for (int i = 0; i < bytes.length; i++) {
+			for (int j = 7; j >= 0; j--) {
+				bitSet.set(index++, (bytes[i] & (1 << j)) >> j == 1 ? true
+						: false);
+			}
+		}
+		return bitSet;
 	}
 }

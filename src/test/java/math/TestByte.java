@@ -11,7 +11,6 @@ public class TestByte {
 		}
 		byte[] bytes = bitSet.toByteArray();
 //		int num = ByteUtil.bytesToInt(bytes, 0);
-
 		int num = ByteUtil.calRemainLength(bytes);
 		System.out.println(num);
 	}
