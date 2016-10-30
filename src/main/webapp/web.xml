@@ -379,7 +379,7 @@
       <url-pattern>/servlets/nonblocking/numberwriter</url-pattern>
     </servlet-mapping>
 
-    <!-- Server Push examples -->
+    <!-- NettyServer Push examples -->
     <servlet>
       <servlet-name>simpleimagepush</servlet-name>
       <servlet-class>http2.SimpleImagePush</servlet-class>

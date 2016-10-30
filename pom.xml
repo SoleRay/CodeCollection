@@ -131,5 +131,12 @@
 			<artifactId>ow2-jaspic-1.0-spec</artifactId>
 			<version>1.0.13</version>
 		</dependency>
+
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty</artifactId>
+			<version>3.10.5.Final</version>
+		</dependency>
+
 	</dependencies>
 </project>

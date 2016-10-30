@@ -1,22 +1,19 @@
-package socket.netty;
+package socket.netty.client;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.*;
 
 /**
- * Created by Administrator on 2016-10-28.
+ * Created by Administrator on 2016-10-30.
  */
-public class HelloHandler extends SimpleChannelHandler {
-
+public class HiHandler extends SimpleChannelHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
 
         String s = (String) e.getMessage();
         System.out.println(s);
 
-        ChannelBuffer channelBuffer = ChannelBuffers.copiedBuffer("hi".getBytes());
-        ctx.getChannel().write(channelBuffer);
         super.messageReceived(ctx, e);
     }
 
