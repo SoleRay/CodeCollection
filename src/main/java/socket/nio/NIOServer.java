@@ -61,16 +61,18 @@ public class NIOServer {
 				// 删除已选的key,以防重复处理
 				ite.remove();
 
-				newCachedThreadPool.execute(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							handler(key);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				});
+				handler(key);
+				//不可取
+//				newCachedThreadPool.execute(new Runnable() {
+//					@Override
+//					public void run() {
+//						try {
+//							handler(key);
+//						} catch (IOException e) {
+//							e.printStackTrace();
+//						}
+//					}
+//				});
 			}
 		}
 	}
