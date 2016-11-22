@@ -1,6 +1,7 @@
 package socket.netty.serializer.demo;
 
-import com.cn.core.Serializer;
+
+import socket.netty.serializer.core.Serializer;
 
 public class Resource extends Serializer {
 	
