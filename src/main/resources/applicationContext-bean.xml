@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:c="http://www.springframework.org/schema/c"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans-4.2.xsd"
+	>
+
+	<!-- restTemplate 支持https -->
+	<bean id="restTemplate" class=" org.springframework.web.client.RestTemplate"
+		  c:requestFactory-ref="clientHttpRequestFactory">
+	</bean>
+
+	<bean id="clientHttpRequestFactory" class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory"
+		  c:httpClient-ref="httpClient">
+	</bean>
+
+	<bean id="httpClient" class="http.HttpsClientUtil"
+		  factory-method="createTrustHttpsClientByPool"/>
+
+
+
+
+</beans>
