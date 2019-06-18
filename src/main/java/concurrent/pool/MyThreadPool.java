@@ -4,9 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MyThreadPool {
@@ -17,46 +18,44 @@ public class MyThreadPool {
 
     /**
      * ctl的前4位是runstate，后28位是workerCount
-     *
+     * <p>
      * 所以这个综合值的默认初始状态是：RUNNING,0个线程
      */
-    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING,0));
+    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
 
     private static final int COUNT_BITS = Integer.SIZE - 3; //29
-    private static final int COUNT_MASK = (1 << COUNT_BITS ) -1; //1fff,ffff
+    private static final int COUNT_MASK = (1 << COUNT_BITS) - 1; //1fff,ffff
 
-    private static final int RUNNING    = -1 << COUNT_BITS;//e000,0000
-    private static final int SHUTDOWN   =  0 << COUNT_BITS;//0
-    private static final int STOP       =  1 << COUNT_BITS;//2000,0000
-    private static final int TIDYING    =  2 << COUNT_BITS;//4000,0000
-    private static final int TERMINATED =  3 << COUNT_BITS;//6000,0000
+    private static final int RUNNING = -1 << COUNT_BITS;//e000,0000
+    private static final int SHUTDOWN = 0 << COUNT_BITS;//0
+    private static final int STOP = 1 << COUNT_BITS;//2000,0000
+    private static final int TIDYING = 2 << COUNT_BITS;//4000,0000
+    private static final int TERMINATED = 3 << COUNT_BITS;//6000,0000
+
+    private static final boolean ONLY_ONE = true;
 
     private final ReentrantLock mainLock = new ReentrantLock();
 
+    private final Condition termination = mainLock.newCondition();
 
-    private static int runStateOf(int c){
+    private static int runStateOf(int c) {
         return c & ~COUNT_MASK;
     }
 
-    private static int workerCountOf(int c){
+    private static int workerCountOf(int c) {
         return c & COUNT_MASK;
     }
 
     /**
-     *
      * @param rs = runState
      * @param wc = workerCount
      * @return 返回综合值 ctl
      */
-    private static int ctlOf(int rs ,int wc){
+    private static int ctlOf(int rs, int wc) {
         return rs | wc;
     }
 
-    private static boolean isRunning(int c) {
-        return c < SHUTDOWN;
-    }
-
-    private boolean remove(Runnable task){
+    private boolean remove(Runnable task) {
         return queue.remove(task);
     }
 
@@ -70,7 +69,7 @@ public class MyThreadPool {
         this.maxPoolSize = maxPoolSize;
     }
 
-    private final class Worker implements Runnable {
+    private final class Worker extends AbstractQueuedSynchronizer implements Runnable {
 
         private Thread t;
 
@@ -83,52 +82,275 @@ public class MyThreadPool {
 
         @Override
         public void run() {
-            try {
-                while (task != null || (task = getTask()) != null) {
-
-                    try {
-                        task.run();
-                    } finally {
-                        task = null;
-                    }
-                }
-            } finally {
-                workers.remove(this);
-            }
-
+            runTask(this);
         }
 
         public void start() {
             t.start();
         }
 
-        public boolean isAlive(){
+        public boolean isAlive() {
             return t.isAlive();
         }
+
+        @Override
+        protected boolean tryAcquire(int arg) {
+            if (compareAndSetState(0, 1)) {
+                setExclusiveOwnerThread(Thread.currentThread());
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        protected boolean tryRelease(int arg) {
+            setExclusiveOwnerThread(null);
+            setState(0);
+            return true;
+        }
+
+        @Override
+        protected boolean isHeldExclusively() {
+            return getState() != 0;
+        }
+
+        public void lock() {
+            acquire(1);
+        }
+
+        public boolean tryLock() {
+            return tryAcquire(1);
+        }
+
+        public void unlock() {
+            release(1);
+        }
+
+        public boolean isLocked() {
+            return isHeldExclusively();
+        }
+
+        public Runnable getTask() {
+            return task;
+        }
+
+        public void setTask(Runnable task) {
+            this.task = task;
+        }
+
+        public Thread getThread() {
+            return t;
+        }
+
+        public void interrupt() {
+
+            if (getState() >= 0 && t != null && !t.isInterrupted()) {
+                t.interrupt();
+            }
+        }
+    }
+
+    private void runTask(Worker worker) {
+
+        Thread t = Thread.currentThread();
+
+        Runnable task = worker.getTask();
+
+        try {
+            while (task != null || (task = getTask()) != null) {
+
+                int c = ctl.get();
+
+                worker.lock();
+                try {
+                    beforeExecute(t, task);
+                    try {
+                        task.run();
+                        afterExecute(task, null);
+                    } catch (Exception e) {
+                        afterExecute(task, e);
+                    }
+
+                } finally {
+                    task = null;
+                    worker.unlock();
+                }
+            }
+        } finally {
+            processWorkerExit(worker);
+
+        }
+    }
+
+    private void processWorkerExit(Worker worker) {
+
+        mainLock.lock();
+        try {
+            workers.remove(this);
+        } finally {
+            mainLock.unlock();
+        }
+
+        tryTerminate();
+    }
+
+    private void tryTerminate() {
+
+
+        while (true) {
+            int c = ctl.get();
+
+            if (isRunning(c) || runStateAtLeast(c, TIDYING)
+                    || runStateLessThan(c, STOP) || !queue.isEmpty()) {
+                return;
+            }
+
+            if (workerCountOf(c) != 0) {
+                interruptIdleWorkers(ONLY_ONE);
+            }
+
+            mainLock.lock();
+
+            try {
+                if (ctl.compareAndSet(c, ctlOf(TIDYING, 0))) {
+                    try {
+                        terminated();
+                    } finally {
+                        ctl.set(ctlOf(TERMINATED, 0));
+                        termination.signalAll();
+                    }
+                    return;
+                }
+            } finally {
+                mainLock.unlock();
+            }
+
+        }
+    }
+
+    private void terminated() {
+    }
+
+    private void interruptIdleWorkers(boolean onlyOne) {
+
+        try {
+            mainLock.lock();
+
+            for (Worker w : workers) {
+                Thread t = w.getThread();
+                if (!t.isInterrupted() && w.tryLock()) {
+                    try {
+                        t.interrupt();
+                    } catch (Exception e) {
+
+                    } finally {
+                        w.unlock();
+                    }
+                }
+
+                if (onlyOne) {
+                    break;
+                }
+            }
+        } finally {
+            mainLock.unlock();
+        }
+
     }
 
     private Runnable getTask() {
-        try {
 
-            Runnable task = queue.poll(300, TimeUnit.MILLISECONDS);
-            return task;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        boolean timedOut = false;
+
+        for(;;) {
+
+            int c = ctl.get();
+
+            if(!isRunning(c) || queue.isEmpty()){
+                decrementWorkerCount();
+                return null;
+            }
+
+            int wc = workerCountOf(c);
+
+            boolean timed = wc > corePoolSize;
+
+            try {
+
+                if ((wc > maxPoolSize || timed && timedOut)
+                        && (wc > 1 || queue.isEmpty())) {
+                    if (compareAndDecrementWorkerCount(c)) {
+                        return null;
+                    }
+
+                    continue;
+                }
+
+                Runnable task = timed ?
+                        queue.poll(300, TimeUnit.MILLISECONDS) :
+                        queue.take();
+
+                if (task != null) {
+                    return task;
+                }
+                timedOut = true;
+            } catch (InterruptedException e) {
+                timedOut = false;
+                e.printStackTrace();
+            }
         }
+    }
 
-        return null;
+
+
+    public void shutDown() {
+        mainLock.lock();
+        try {
+            advanceRunState(SHUTDOWN);
+            interruptWorkers();
+            onShutdown();
+        } finally {
+            mainLock.unlock();
+        }
+        tryTerminate();
+    }
+
+    private void onShutdown() {
+    }
+
+    private void advanceRunState(int targetState) {
+        int c = ctl.get();
+        while (true) {
+            if (runStateAtLeast(c, targetState) || ctl.compareAndSet(c, ctlOf(targetState, workerCountOf(c)))) {
+                break;
+            }
+        }
+    }
+
+    private void interruptWorkers() {
+
+        for (Worker w : workers) {
+            w.interrupt();
+        }
+    }
+
+
+    protected void beforeExecute(Thread t, Runnable r) {
+    }
+
+    protected void afterExecute(Runnable r, Throwable t) {
     }
 
     public void execute(Runnable task) {
-        if(task == null){
+        if (task == null) {
             throw new NullPointerException();
         }
 
         int c = ctl.get();
 
         if (workerCountOf(c) < corePoolSize) {
-            addWorker(task,true);
-            System.out.println("结束前："+workerCountOf(ctl.get()));
+            addWorker(task, true);
+            System.out.println("结束前：" + workerCountOf(ctl.get()));
             return;
         }
 
@@ -137,12 +359,12 @@ public class MyThreadPool {
         //如果线程数目已经超过核心线程数，但任务还可以加入队列的话，那么什么都不做
         if (isRunning(c) && queue.offer(task)) {
             int recheck = ctl.get();
-            if(!isRunning(recheck) && remove(task)){
+            if (!isRunning(recheck) && remove(task)) {
                 rejectTask();
-            }else if(workerCountOf(recheck) == 0){
+            } else if (workerCountOf(recheck) == 0) {
                 //TODO
             }
-        }else if(!addWorker(task,false)){
+        } else if (!addWorker(task, false)) {
             rejectTask();
         }
     }
@@ -151,15 +373,23 @@ public class MyThreadPool {
         throw new RuntimeException("当前运行的线程数已经达到最大值，无法再接受新的任务");
     }
 
-    //其实这个锁，真正想要锁的，是把work放入set这一步 
+    //其实这个锁，真正想要锁的，是把work放入set这一步
     private boolean addWorker(Runnable task, boolean core) {
 
-        int c = ctl.get();
 
-        while(true){
+
+        for(;;) {
+
+            int c = ctl.get();
+
+            if(runStateAtLeast(c,SHUTDOWN)
+                    && (runStateAtLeast(c,STOP)||task!=null||queue.isEmpty())){
+                return false;
+            }
+
 
             //如果当前worker的数量超过了核心或者最大线程数（取决于core的值）
-            if(workerCountOf(c) >= workerCountOf((core?corePoolSize:maxPoolSize))){
+            if (workerCountOf(c) >= workerCountOf((core ? corePoolSize : maxPoolSize))) {
                 System.out.println("超过了核心或者最大线程数");
                 return false;
             }
@@ -170,37 +400,38 @@ public class MyThreadPool {
              * 那么后执行的线程，这个compareAndIncrementWorkerCount就会返回false
              * 然后执行c = ctl.get()，重新刷新一下c的值，否则c不改变的话，会进入死循环
              */
-            if(compareAndIncrementWorkerCount(c)){
+            if (compareAndIncrementWorkerCount(c)) {
                 break;
             }
 
-            c = ctl.get();
         }
 
         boolean workerStarted = false;
         boolean workerAdded = false;
-        try{
+        try {
             Worker worker = new Worker(task);
-            try{
+            try {
                 mainLock.lock();
 
-                if(isRunning(c)){
-                    if(worker.isAlive()){
+                int c = ctl.get();
+
+                if (isRunning(c)) {
+                    if (worker.isAlive()) {
                         throw new IllegalThreadStateException();
                     }
 
                     workers.add(worker);
                     workerAdded = true;
                 }
-            }finally {
+            } finally {
                 mainLock.unlock();
             }
-            if(workerAdded){
+            if (workerAdded) {
                 worker.start();
                 workerStarted = true;
             }
-        }finally {
-            if(!workerStarted){
+        } finally {
+            if (!workerStarted) {
 
             }
         }
@@ -208,10 +439,28 @@ public class MyThreadPool {
         return workerStarted;
     }
 
+    private void decrementWorkerCount() {
+        ctl.addAndGet(-1);
+    }
+
     private boolean compareAndIncrementWorkerCount(int expect) {
-        boolean b = ctl.compareAndSet(expect, expect + 1);
-        System.out.println(b);
-        return b;
+        return ctl.compareAndSet(expect, expect + 1);
+    }
+
+    private boolean compareAndDecrementWorkerCount(int expect) {
+        return ctl.compareAndSet(expect, expect - 1);
+    }
+
+    private static boolean runStateLessThan(int c, int s) {
+        return c < s;
+    }
+
+    private static boolean runStateAtLeast(int c, int s) {
+        return c >= s;
+    }
+
+    private static boolean isRunning(int c) {
+        return c < SHUTDOWN;
     }
 
     private void addWorkerFailed(Worker w) {
