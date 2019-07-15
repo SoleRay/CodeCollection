@@ -52,8 +52,13 @@ public class LamdaDemo {
     private static void testStringCallBack() {
 
         List<String> list = new ArrayList<>();
-        StringCallBack scb = list::add;
 
+        StringCallBack scb = list::add;
+        scb.doWithString("box");
+        scb.doWithString("cup");
+        System.out.println(list.get(0));
+
+        scb = list::remove;
         scb.doWithString("box");
         System.out.println(list.get(0));
     }
