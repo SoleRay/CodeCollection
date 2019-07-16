@@ -146,7 +146,6 @@ public class LamdaDemo {
         //andThen的调用
         List<String> arrayList = new ArrayList<>();
         Consumer<String> add = arrayList::add;
-        Consumer<String> rm = arrayList::remove;
 
         add.andThen(add).accept("hello");
         System.out.println(arrayList.size());
