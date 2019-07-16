@@ -183,7 +183,7 @@ public class LamdaDemo {
         boolean b9 = p5.negate().test(6);
         System.out.println("b9="+b9);
 
-        //not的使用
+        //not的使用,这个是jdk11才有的方法，注意Java Complier的设置
         Predicate<Integer> p6 = x -> x>5 && x<10;
         Predicate<Integer> p7 = Predicate.not(p6);
 
