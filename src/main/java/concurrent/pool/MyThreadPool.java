@@ -26,11 +26,13 @@ public class MyThreadPool {
     private static final int COUNT_BITS = Integer.SIZE - 3; //29
     private static final int COUNT_MASK = (1 << COUNT_BITS) - 1; //1fff,ffff
 
-    private static final int RUNNING = -1 << COUNT_BITS;//e000,0000
+
+
+    private static final int RUNNING = -1 << COUNT_BITS;//e000,0000 //-536870912
     private static final int SHUTDOWN = 0 << COUNT_BITS;//0
-    private static final int STOP = 1 << COUNT_BITS;//2000,0000
-    private static final int TIDYING = 2 << COUNT_BITS;//4000,0000
-    private static final int TERMINATED = 3 << COUNT_BITS;//6000,0000
+    private static final int STOP = 1 << COUNT_BITS;//2000,0000 //536870912
+    private static final int TIDYING = 2 << COUNT_BITS;//4000,0000 //1073741824
+    private static final int TERMINATED = 3 << COUNT_BITS;//6000,0000 //1610612736
 
     private static final boolean ONLY_ONE = true;
 
@@ -145,6 +147,7 @@ public class MyThreadPool {
         public void interrupt() {
 
             if (getState() >= 0 && t != null && !t.isInterrupted()) {
+                System.out.println("开始中断线程："+t.getName());
                 t.interrupt();
             }
         }
@@ -159,9 +162,17 @@ public class MyThreadPool {
         try {
             while (task != null || (task = getTask()) != null) {
 
-                int c = ctl.get();
-
                 worker.lock();
+                System.out.println(t.getName()+" 开始执行任务");
+                if ((runStateAtLeast(ctl.get(), STOP) ||
+                        (Thread.interrupted() &&
+                                runStateAtLeast(ctl.get(), STOP))) &&
+                        !t.isInterrupted()){
+                    System.out.println(t.getName()+" 再次被中断");
+                    t.interrupt();
+                }
+
+
                 try {
                     beforeExecute(t, task);
                     try {
@@ -187,6 +198,7 @@ public class MyThreadPool {
         mainLock.lock();
         try {
             workers.remove(this);
+            System.out.println(worker.t.getName()+" 被移出Worker集合");
         } finally {
             mainLock.unlock();
         }
@@ -195,13 +207,14 @@ public class MyThreadPool {
     }
 
     private void tryTerminate() {
+        System.out.println("try terminate...");
 
-
-        while (true) {
+        for(;;) {
             int c = ctl.get();
 
-            if (isRunning(c) || runStateAtLeast(c, TIDYING)
-                    || runStateLessThan(c, STOP) || !queue.isEmpty()) {
+            if (isRunning(c)
+                    || runStateAtLeast(c, TIDYING)
+                    || (runStateLessThan(c, STOP) && !queue.isEmpty())) {
                 return;
             }
 
@@ -237,15 +250,20 @@ public class MyThreadPool {
             mainLock.lock();
 
             for (Worker w : workers) {
+
                 Thread t = w.getThread();
+                System.out.println(t.getName());
                 if (!t.isInterrupted() && w.tryLock()) {
                     try {
+                        System.out.println("开始中断线程："+t.getName());
                         t.interrupt();
                     } catch (Exception e) {
 
                     } finally {
                         w.unlock();
                     }
+                }else {
+                    System.out.println(t.getName()+" 正在运行，不能被中断");
                 }
 
                 if (onlyOne) {
@@ -266,7 +284,13 @@ public class MyThreadPool {
 
             int c = ctl.get();
 
-            if(!isRunning(c) || queue.isEmpty()){
+            //1.如果状态是shutdown,那必须队列是空的，才可以返回null
+            //2.如果是stop或者更高的状态，那可以直接返回null
+            //3.这个判断很关键，shutDown和shutDownNow的本质区别就在这一步
+            //shutdown的情况下，只要queue不为空，这里就不会返回null，所以程序会把所有的任务执行完，才退出
+            //而shutDownNow的情况下，这里就算queue不为空，也会直接返回null，所以runTask方法就直接结束了
+            if((runStateAtLeast(c, SHUTDOWN) && queue.isEmpty())
+                    || runStateAtLeast(c,STOP)){
                 decrementWorkerCount();
                 return null;
             }
@@ -277,7 +301,7 @@ public class MyThreadPool {
 
             try {
 
-                if ((wc > maxPoolSize || timed && timedOut)
+                if ((wc > maxPoolSize || (timed && timedOut))
                         && (wc > 1 || queue.isEmpty())) {
                     if (compareAndDecrementWorkerCount(c)) {
                         return null;
@@ -296,7 +320,6 @@ public class MyThreadPool {
                 timedOut = true;
             } catch (InterruptedException e) {
                 timedOut = false;
-                e.printStackTrace();
             }
         }
     }
@@ -307,6 +330,18 @@ public class MyThreadPool {
         mainLock.lock();
         try {
             advanceRunState(SHUTDOWN);
+            interruptIdleWorkers(false);
+            onShutdown();
+        } finally {
+            mainLock.unlock();
+        }
+        tryTerminate();
+    }
+
+    public void shutDownNow() {
+        mainLock.lock();
+        try {
+            advanceRunState(STOP);
             interruptWorkers();
             onShutdown();
         } finally {
@@ -382,8 +417,8 @@ public class MyThreadPool {
 
             int c = ctl.get();
 
-            if(runStateAtLeast(c,SHUTDOWN)
-                    && (runStateAtLeast(c,STOP)||task!=null||queue.isEmpty())){
+            if(runStateAtLeast(c,STOP)
+                    || (runStateAtLeast(c,SHUTDOWN) && (task!=null||queue.isEmpty()))){
                 return false;
             }
 
@@ -408,8 +443,9 @@ public class MyThreadPool {
 
         boolean workerStarted = false;
         boolean workerAdded = false;
+        Worker worker = null;
         try {
-            Worker worker = new Worker(task);
+            worker = new Worker(task);
             try {
                 mainLock.lock();
 
@@ -432,7 +468,7 @@ public class MyThreadPool {
             }
         } finally {
             if (!workerStarted) {
-
+                addWorkerFailed(worker);
             }
         }
 
@@ -464,6 +500,25 @@ public class MyThreadPool {
     }
 
     private void addWorkerFailed(Worker w) {
+        mainLock.lock();
+        try {
+            if (w != null)
+                workers.remove(w);
+            decrementWorkerCount();
+            tryTerminate();
+        } finally {
+            mainLock.unlock();
+        }
+    }
 
+    public void aa(){
+
+        for (;;) {
+            int c = ctl.get();
+
+            if(ctl.compareAndSet(c, c + 1)) {
+                break;
+            }
+        }
     }
 }

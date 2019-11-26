@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.BitSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestByte {
 
@@ -31,5 +32,7 @@ public class TestByte {
 //		int num = ByteUtil.bytesToInt(bytes, 0);
         int num = ByteUtil.calRemainLength(bytes);
         System.out.println(num);
+
+        AtomicInteger atomicInteger = new AtomicInteger();
     }
 }
