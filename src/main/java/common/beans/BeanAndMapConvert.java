@@ -1,4 +1,4 @@
-package beans;
+package common.beans;
 
 import org.apache.commons.beanutils.BeanUtils;
 

@@ -1,4 +1,4 @@
-package beans;
+package common.beans;
 
 public class Bean {
 

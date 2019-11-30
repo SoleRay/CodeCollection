@@ -1,4 +1,4 @@
-package codec;
+package common.codec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
