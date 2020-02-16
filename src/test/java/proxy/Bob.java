@@ -1,7 +1,7 @@
 package proxy;
 
 
-public class Bob implements Man {
+public class Bob implements Man,Woman {
 
     @Override
     public void eat(){
@@ -11,5 +11,10 @@ public class Bob implements Man {
     @Override
     public void sleep(){
         System.out.println("bob start to sleep");
+    }
+
+    @Override
+    public void makeUp() {
+
     }
 }

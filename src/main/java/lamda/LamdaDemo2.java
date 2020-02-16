@@ -94,6 +94,9 @@ public class LamdaDemo2 {
         peoples.sort(Comparator.comparing(Person::getAge));
     }
 
+
+
+
     public static void main(String[] args) {
 
 

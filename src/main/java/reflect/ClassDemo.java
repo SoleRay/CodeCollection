@@ -19,18 +19,7 @@ public class ClassDemo {
     }
 
 
-    /**
-     *
-     * 返回数组的真实类型
-     * 例如：String[] a = new String[5];
-     * Class realType = a.getClass().getComponentType()
-     *
-     * realType的值就是String类型
-     *
-     */
-    public static Class<?> getComponentType(Class arrayClass){
-        return arrayClass.getComponentType();
-    }
+
 
     public static boolean isSimpleValueType(Class<?> type) {
         return (Void.class != type && void.class != type &&

@@ -1,14 +1,16 @@
 package lamda;
 
+import org.apache.poi.ss.formula.functions.T;
+import org.junit.jupiter.api.Test;
+
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 /**
@@ -41,32 +43,22 @@ public class LamdaDemo {
     @FunctionalInterface
     public interface Location {
         int find(int x,int y);
+
+        public static Location multiply(Function<Integer,Integer> expression){
+            return (c1,c2) -> expression.apply(c1) * expression.apply(c2);
+        }
     }
 
-
-    public static void main(String[] args) {
-//        testBase();
-
-//        testFunction();
-
-//        testConsumer();
-
-        testPredicate();
-
-//        testSupplier();
-
-//        testFunctionalInterface();
-
-    }
-
-    private static void testBase() {
+    @Test
+    public void testBase() {
 
         Runnable r = ()-> System.out.println("hello");
         Thread t = new Thread(r);
         t.start();
     }
 
-    private static void testFunction() {
+    @Test
+    public void testFunction() {
         //基本使用
         Function<Integer, Integer> expression = e -> e * 2;
         System.out.println(expression.apply(3));
@@ -79,6 +71,8 @@ public class LamdaDemo {
         Location l = (c1,c2) -> expression.apply(c1) * expression.apply(c2);
         System.out.println(l.find(5,6));
 
+        Location l2 = Location.multiply(e -> e * 2);
+        System.out.println(l2.find(7,8));
         /**
          *
          * andThen方法：先执行andThen方法调用者的函数，然后将调用者函数的结果，作为参数，传给andThen方法里的函数
@@ -118,7 +112,9 @@ public class LamdaDemo {
 
     }
 
-    private static void testConsumer() {
+
+    @Test
+    public void testConsumer() {
         List<String> list = new ArrayList<>();
 
         //最基本的调用
@@ -151,7 +147,15 @@ public class LamdaDemo {
         System.out.println(arrayList.size());
     }
 
-    private static void testPredicate() {
+    /**
+     * 更实在的用法，参考LinkedList的removeIf
+     *
+     * 原理：循环LinkedList中的每个节点，调用Predicate的test方法
+     * 如果符合，就remove掉
+     *
+     */
+    @Test
+    public void testPredicate() {
         //test的使用
         Predicate<Integer> p = x -> x > 0;
         boolean b0 = p.test(5);
@@ -191,17 +195,28 @@ public class LamdaDemo {
         boolean b11 = p7.test(11);
         boolean b12 = p7.test(6);
         System.out.println("b10="+b10+",b11="+b11+",b12="+b12);
+
+        List<String> list = new ArrayList<>();
+        list.add("box");
+        list.add("dog");
+        list.add("jackson");
+        list.removeIf((string)-> string!=null && string.equals("dog"));
+        System.out.println(list);
     }
 
-    private static void testSupplier() {
+    @Test
+    public void testSupplier() {
         Supplier<LamdaDemo> supplier = LamdaDemo::new;
+        Supplier<String> stringSupplier = ()-> "box";
         LamdaDemo demo = supplier.get();
         System.out.println(demo.name);
+        System.out.println(stringSupplier.get());
     }
 
 
     //自定义多参数
-    private static void testFunctionalInterface() {
+    @Test
+    public void testFunctionalInterface() {
         Location l1 = (x, y) -> x+y;
         System.out.println(l1.find(5,6));
 
@@ -216,5 +231,44 @@ public class LamdaDemo {
         };
         System.out.println(l3.find(5,6));
     }
-    
+
+    /**
+     * limit 主要用来限制显示的量
+     *
+     * map 主要用来对传入的参数进行逻辑处理
+     *
+     * Filter 用来过滤所需要的数据
+     *
+     * collect 生成集合，一般配合Collectors
+     */
+
+    @Test
+    public void testStream(){
+        List<String> list = new ArrayList<>();
+        list.add("box");
+        list.add("dog");
+        list.add("jackson");
+
+        List<Bird> birds = list.stream().map(Bird::new).collect(Collectors.toList());
+
+        Random random = new Random();
+        random.ints().limit(10).forEach(System.out::println);
+    }
+
+    public static class Bird {
+
+        private String name;
+
+        public Bird(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 }
