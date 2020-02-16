@@ -1,6 +1,8 @@
 package concurrent.future;
 
+import math.Sum;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.StopWatch;
 
 import java.time.Clock;
 import java.time.ZoneId;
@@ -58,15 +60,18 @@ public class CompletableFutureTest {
 
     @Test
     public void allOf() throws Exception {
-        Clock clock = Clock.tickMillis(ZoneId.systemDefault());
-        CompletableFuture<Void> futureA = CompletableFuture.runAsync(SleepTask::new);
-        CompletableFuture<Void> futureB = CompletableFuture.runAsync(SleepTask::new);
-        CompletableFuture<Void> futureC = CompletableFuture.runAsync(SleepTask::new);
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        Runnable r = new SleepTask();
+        CompletableFuture<Void> futureA = CompletableFuture.runAsync(r);
+        CompletableFuture<Void> futureB = CompletableFuture.runAsync(r);
+        CompletableFuture<Void> futureC = CompletableFuture.runAsync(r);
 
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(futureA, futureB, futureC);
         resultFuture.get();
-        long millis = clock.millis();
-        System.out.println("end in " + millis);
+        stopWatch.stop();
+        System.out.println("end in " + stopWatch.getTotalTimeSeconds());
 
     }
 
@@ -75,6 +80,7 @@ public class CompletableFutureTest {
         @Override
         public void run() {
             try {
+                System.out.println("Thread is " + Thread.currentThread().getId());
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -82,43 +88,5 @@ public class CompletableFutureTest {
         }
     }
 
-    public interface Sum {
 
-        static int sumRange(int start,int end){
-            int result = 0;
-            for(int i=start;i<=end;i++){
-                result = result + i;
-            }
-            return result;
-        }
-
-        static int factorial(int start,int end){
-            int result = 1;
-            for(int i=start;i<=end;i++){
-                result = result * i;
-            }
-            return result;
-        }
-
-        static int sumPow(int start,int end){
-            int result = 0;
-            for(int i=start;i<=end;i++){
-                result = result + i*i;
-            }
-            return result;
-        }
-
-        static int sumRange(){
-            return sumRange(1,100);
-        }
-
-        static int factorial(){
-            return factorial(1,10);
-        }
-
-        static int sumPow(){
-            return factorial(1,100);
-        }
-
-    }
 }
