@@ -29,9 +29,15 @@ import java.util.stream.Collectors;
  *     3.Predicate<T>   接受一个参数T，返回布尔值    默认方法：void test(T t)
  *     4.Supplier<T>    不接受参数，返回一个值T      默认方法：T get()
  *
+ * 一些特殊的系统自带的函数式接口
+ *     1.BiFunction<T, U, R> 接受两个参数T、U，返回一个值R   默认方法：R apply(T t, U u)
+ *     2.BiConsumer<T, U>    接受两个参数T、U，无返回值      默认方法：void accpet(T t, U u)
+ *     3.BiPredicate<T, U>   接受两个参数T、U，返回布尔值    默认方法：void test(T t, U u)
+ *
  * 自定义函数式接口：
  *     1.以上的几个常用默认接口并不能满足全部的需要，比如：函数需要接受多个参数
  *     2.出于业务的需要，往往需要明确的接口名称和接口函数名称，来明确某种业务场景或者需求
+ *
  *
  *
  * */
