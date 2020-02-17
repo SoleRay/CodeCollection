@@ -1,49 +1,39 @@
 package socket.netty.client;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.*;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
 
-import java.net.InetSocketAddress;
-import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringEncoder;
+
+import java.util.Date;
 
 /**
  * Created by Administrator on 2016-10-30.
  */
 public class NettyClient {
 
-    public static void main(String[] args) {
-        ClientBootstrap bootstrap = new ClientBootstrap();
-        ExecutorService boss = Executors.newCachedThreadPool();
-        ExecutorService worker = Executors.newCachedThreadPool();
+    public static void main(String[] args) throws Exception {
+        Bootstrap bootstrap = new Bootstrap();
+        NioEventLoopGroup group = new NioEventLoopGroup();
 
-        bootstrap.setFactory(new NioClientSocketChannelFactory(boss,worker));
+        bootstrap.group(group)
+                .channel(NioSocketChannel.class)
+                .handler(new ChannelInitializer<Channel>() {
 
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            @Override
-            public ChannelPipeline getPipeline() throws Exception {
+                    @Override
+                    protected void initChannel(Channel ch) {
+                        ch.pipeline().addLast(new StringEncoder());
+                    }
+                });
 
-                ChannelPipeline pipeline = Channels.pipeline();
-                pipeline.addLast("decoder",new StringDecoder());
-                pipeline.addLast("encoder",new StringEncoder());
-                pipeline.addLast("hiHandler", new HiHandler());
-                return pipeline;
-            }
-        });
+        Channel channel = bootstrap.connect("127.0.0.1", 8000).channel();
 
-        ChannelFuture connect = bootstrap.connect(new InetSocketAddress("127.0.0.1", 18080));
-        Channel channel = connect.getChannel();
-
-        System.out.println("client start...");
-
-        Scanner scanner = new Scanner(System.in);
-        while (true){
-            System.out.println("请输入：");
-            channel.write(scanner.next());
+        while (true) {
+            channel.writeAndFlush(new Date() + ": hello world!");
+            Thread.sleep(2000);
         }
     }
 }

@@ -1,14 +1,13 @@
 package socket.netty.server;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.*;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import socket.netty.server.HelloHandler;
-
-import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
 
 /**
  * Created by Administrator on 2016-10-28.
@@ -17,22 +16,34 @@ public class NettyServer {
 
     public static void main(String[] args) {
         ServerBootstrap bootstrap = new ServerBootstrap();
-        ExecutorService boss = Executors.newCachedThreadPool();
-        ExecutorService worker = Executors.newCachedThreadPool();
 
-        bootstrap.setFactory(new NioServerSocketChannelFactory(boss,worker));
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            @Override
-            public ChannelPipeline getPipeline() throws Exception {
-                ChannelPipeline pipeline = Channels.pipeline();
-                pipeline.addLast("decoder",new StringDecoder());
-                pipeline.addLast("helloHandler", new HelloHandler());
-                return pipeline;
-            }
-        });
+        NioEventLoopGroup boss = new NioEventLoopGroup();
 
-        bootstrap.bind(new InetSocketAddress(18080));
-        System.out.println("NettyServer start!!!");
+        NioEventLoopGroup worker = new NioEventLoopGroup();
+
+        bootstrap.group(boss,worker)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<NioSocketChannel>() {
+
+                    protected void initChannel(NioSocketChannel ch) {
+
+                        ch.pipeline().addLast(new StringDecoder());
+                        ch.pipeline().addLast(new SimpleChannelInboundHandler<String>() {
+
+                            @Override
+
+                            protected void channelRead0(ChannelHandlerContext ctx, String msg) {
+
+                                System.out.println(msg);
+
+                            }
+                        });
+
+                    }
+
+                }).bind(8000);
 
     }
+
+
 }

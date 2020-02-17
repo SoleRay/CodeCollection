@@ -4,9 +4,10 @@ import math.Sum;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
 
-import java.time.Clock;
-import java.time.ZoneId;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 public class CompletableFutureTest {
 
@@ -63,28 +64,79 @@ public class CompletableFutureTest {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        Runnable r = new SleepTask();
-        CompletableFuture<Void> futureA = CompletableFuture.runAsync(r);
-        CompletableFuture<Void> futureB = CompletableFuture.runAsync(r);
-        CompletableFuture<Void> futureC = CompletableFuture.runAsync(r);
+        CompletableFuture<Integer> futureA = CompletableFuture.supplyAsync(new SleepTask(5000));
+        CompletableFuture<Integer> futureB = CompletableFuture.supplyAsync(new SleepTask(3000));
+        CompletableFuture<Integer> futureC = CompletableFuture.supplyAsync(new SleepTask(1000));
 
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(futureA, futureB, futureC);
         resultFuture.get();
+        Integer resultA = futureA.get();
+        Integer resultB = futureB.get();
+        Integer resultC = futureC.get();
+        Integer sum = resultA+resultB+resultC;
+        System.out.println("Sum futureA="+ resultA +",futureB="+resultB+",futureC="+resultC+" is "+sum);
         stopWatch.stop();
         System.out.println("end in " + stopWatch.getTotalTimeSeconds());
 
     }
 
-    class SleepTask implements Runnable{
+    @Test
+    public void anyOf() throws Exception {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        Supplier<Long> s = new TicketTask();
+        CompletableFuture<Long> futureA = CompletableFuture.supplyAsync(s);
+        CompletableFuture<Long> futureB = CompletableFuture.supplyAsync(s);
+        CompletableFuture<Long> futureC = CompletableFuture.supplyAsync(s);
+
+        CompletableFuture<Object> resultFuture = CompletableFuture.anyOf(futureA, futureB, futureC);
+        System.out.println("Thread "+ resultFuture.get()+" get the ticket");
+        stopWatch.stop();
+        System.out.println("end in " + stopWatch.getTotalTimeSeconds());
+
+    }
+
+    class TicketTask implements Supplier<Long> {
+
+        private final AtomicBoolean ticket = new AtomicBoolean();
 
         @Override
-        public void run() {
+        public Long get() {
+
+            if(ticket.compareAndSet(false,true)){
+                return Thread.currentThread().getId();
+            }
+
+            System.out.println("Thread " + Thread.currentThread().getId() + " didn't get the ticket!!!!");
             try {
-                System.out.println("Thread is " + Thread.currentThread().getId());
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            System.out.println("Thread " + Thread.currentThread().getId() + "end...");
+            return null;
+        }
+    }
+
+    class SleepTask implements Supplier<Integer>{
+
+        private long sleepTime;
+
+        public SleepTask(long sleepTime){
+            this.sleepTime = sleepTime;
+        }
+
+        @Override
+        public Integer get() {
+            try {
+                Thread.sleep(sleepTime);
+                System.out.println("Thread " + Thread.currentThread().getId() + " wake up!!!!");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return new Random().nextInt(100);
         }
     }
 

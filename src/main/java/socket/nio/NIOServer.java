@@ -1,5 +1,7 @@
 package socket.nio;
 
+import socket.netty.demo.pool.NioSelectorRunnablePool;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -7,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,6 +20,9 @@ import java.util.concurrent.Executors;
  * @author -琴兽-
  */
 public class NIOServer {
+
+	private static final NIOServer server = new NIOServer();
+
 	// 通道管理器
 	private Selector selector;
 
@@ -48,51 +54,43 @@ public class NIOServer {
 	 * 
 	 * @throws IOException
 	 */
-	public void listen() throws IOException {
+	public void listen(HandlerFunction handlerFunction) throws IOException {
 		System.out.println("服务端启动成功！");
 		// 轮询访问selector
 		while (true) {
 			// 当注册的事件到达时，方法返回；否则,该方法会一直阻塞
 			selector.select();
 			// 获得selector中选中的项的迭代器，选中的项为注册的事件
-			Iterator<?> ite = this.selector.selectedKeys().iterator();
-			while (ite.hasNext()) {
-				SelectionKey key = (SelectionKey) ite.next();
+			Iterator<?> keyIterator = this.selector.selectedKeys().iterator();
+			while (keyIterator.hasNext()) {
+				SelectionKey key = (SelectionKey) keyIterator.next();
 				// 删除已选的key,以防重复处理
-				ite.remove();
+				keyIterator.remove();
 
-				handler(key);
-				//不可取
-//				newCachedThreadPool.execute(new Runnable() {
-//					@Override
-//					public void run() {
-//						try {
-//							handler(key);
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
-//					}
-//				});
+				handlerFunction.handle(key);
+
+				//单线程可以用这个
+//				handle(key);
 			}
 		}
 	}
 
 	/**
 	 * 处理请求
-	 * 
+	 *
 	 * @param key
 	 * @throws IOException
 	 */
-	public void handler(SelectionKey key) throws IOException {
-		
-		// 客户端请求连接事件
-		if (key.isAcceptable()) {
-			handlerAccept(key);
-			// 获得了可读的事件
-		} else if (key.isReadable()) {
-			handelerRead(key);
-		}
-	}
+//	public void handle(SelectionKey key) throws IOException {
+//
+//		// 客户端请求连接事件
+//		if (key.isAcceptable()) {
+//			handlerAccept(key);
+//			// 获得了可读的事件
+//		} else if (key.isReadable()) {
+//			handelerRead(key);
+//		}
+//	}
 
 	/**
 	 * 处理连接请求
@@ -120,23 +118,31 @@ public class NIOServer {
 	 * @throws IOException
 	 */
 	public void handelerRead(SelectionKey key) throws IOException {
-		// 服务器可读取消息:得到事件发生的Socket通道
-		SocketChannel channel = (SocketChannel) key.channel();
-		// 创建读取的缓冲区
-		ByteBuffer buffer = ByteBuffer.allocate(1024);
-		int read = channel.read(buffer);
-		if(read > 0){
-			byte[] data = buffer.array();
-			String msg = new String(data).trim();
-			System.out.println("服务端收到信息：" + msg);
-			
-			//回写数据
-			ByteBuffer outBuffer = ByteBuffer.wrap("好的".getBytes());
-			channel.write(outBuffer);// 将消息回送给客户端
-		}else{
-			System.out.println("客户端关闭");
-			key.cancel();
+		try{
+			// 服务器可读取消息:得到事件发生的Socket通道
+			SocketChannel channel = (SocketChannel) key.channel();
+			// 创建读取的缓冲区
+			ByteBuffer buffer = ByteBuffer.allocate(1024);
+//			channel.read(buffer);
+//			buffer.flip();
+//			System.out.println(Charset.defaultCharset().newDecoder().decode(buffer).toString());
+			int read = channel.read(buffer);
+			if(read > 0){
+				byte[] data = buffer.array();
+				String msg = new String(data).trim();
+				System.out.println("服务端收到信息：" + msg);
+
+				//回写数据
+				ByteBuffer outBuffer = ByteBuffer.wrap("好的".getBytes());
+				channel.write(outBuffer);// 将消息回送给客户端
+			}else{
+				System.out.println("客户端关闭");
+				key.cancel();
+			}
+		}finally {
+			key.interestOps(SelectionKey.OP_READ);
 		}
+
 	}
 
 	/**
@@ -144,10 +150,54 @@ public class NIOServer {
 	 * 
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
-		NIOServer server = new NIOServer();
-		server.initServer(8000);
-		server.listen();
+	public void start() throws IOException{
+
+		Thread acceptThread = new Thread(new AcceptRunnable());
+		Thread readThread = new Thread(new ReadRunnable());
+		acceptThread.start();
+		readThread.start();
 	}
 
+	public static void main(String[] args) throws IOException {
+		server.initServer(8000);
+		server.start();
+	}
+
+	@FunctionalInterface
+	interface HandlerFunction{
+
+		void handle(SelectionKey key) throws IOException;
+	}
+
+	class AcceptRunnable implements Runnable{
+
+		@Override
+		public void run() {
+			try {
+				server.listen(selectionKey->{
+					if (selectionKey.isAcceptable()) {
+						handlerAccept(selectionKey);
+					}
+				});
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	class ReadRunnable implements Runnable{
+
+		@Override
+		public void run() {
+			try {
+				server.listen(selectionKey->{
+					if (selectionKey.isReadable()) {
+						handelerRead(selectionKey);
+					}
+				});
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
