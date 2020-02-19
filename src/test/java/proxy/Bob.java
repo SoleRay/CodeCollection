@@ -4,8 +4,9 @@ package proxy;
 public class Bob implements Man,Woman {
 
     @Override
-    public void eat(){
+    public int eat(){
         System.out.println("bob start to eat...");
+        return 0;
     }
 
     @Override
@@ -16,5 +17,10 @@ public class Bob implements Man,Woman {
     @Override
     public void makeUp() {
 
+    }
+
+    @Override
+    public Bird findBird() {
+        return null;
     }
 }

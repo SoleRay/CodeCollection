@@ -1,7 +1,9 @@
 package proxy;
 
 public interface Man {
-    void eat();
+    int eat();
 
     void sleep();
+
+    Bird findBird();
 }
