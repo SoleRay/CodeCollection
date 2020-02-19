@@ -1,61 +1,24 @@
-package socket.nio;
+package socket.nio.v3.handler;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 
-public class NIOServerV1 {
+public class ReadableHandler implements Handler {
 
-    public void start() throws Exception{
-        Selector selector = Selector.open();
 
-        initServer(selector);
-
-        run(selector);
-    }
-
-    private void initServer(Selector selector) throws IOException {
-        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-        serverSocketChannel.configureBlocking(false);
-        serverSocketChannel.bind(new InetSocketAddress(8080));
-        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-    }
-
-    private void run(Selector selector) throws IOException {
-        System.out.println("服务器已起动....");
-        while(true){
-            selector.select();
-            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
-            while (iterator.hasNext()){
-
-                SelectionKey key = iterator.next();
-                iterator.remove();
-
-                if(key.isAcceptable()){
-                    handleAcceptable(selector, key);
-                }else if(key.isReadable()){
-                    handleReadable(key);
-                }
-            }
-        }
-    }
-
-    private void handleAcceptable(Selector selector, SelectionKey key) throws IOException {
-        SocketChannel socketChannel = ((ServerSocketChannel) key.channel()).accept();
-        socketChannel.configureBlocking(false);
-        socketChannel.register(selector,SelectionKey.OP_READ);
-        System.out.println("收到新连接：" + socketChannel);
+    @Override
+    public void handle(SelectionKey key) {
+        handleReadable(key);
     }
 
     private void handleReadable(SelectionKey key) {
         try{
-            SocketChannel socketChannel = (SocketChannel) key.channel();
 
+            SocketChannel socketChannel = (SocketChannel) key.channel();
+            System.out.println("channel:"+socketChannel.getRemoteAddress()+" 开始写。。。");
+            Thread.sleep(10000);
             ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
 
             /**channel读取到的数据会写入到ByteBuffer中，所以ByteBuffer此时是写模式*/
@@ -109,11 +72,5 @@ public class NIOServerV1 {
         while (responseBuffer.hasRemaining()){
             socketChannel.write(responseBuffer);
         }
-    }
-
-
-    public static void main(String[] args) throws Exception {
-        NIOServerV1 v1 = new NIOServerV1();
-        v1.start();
     }
 }
