@@ -45,7 +45,8 @@ public class MainReactor extends AbstractReactor {
         }
 
         public void start() throws Exception {
-            int index = count.getAndIncrement() % subReactors.length;
+//            int index = count.getAndIncrement() % subReactors.length;
+            int index = count.getAndIncrement() & (subReactors.length-1);
             AbstractReactor subReactor = subReactors[index];
             SelectionKey selectionKey = subReactor.registerToSelector(socketChannel);
             selectionKey.interestOps(SelectionKey.OP_READ);

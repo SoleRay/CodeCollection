@@ -21,6 +21,12 @@ public class NIOServerV3 {
         MainReactor mainReactor = createMainReactor(serverSocketChannel);
         mainReactor.start();
     }
+    private ServerSocketChannel initServer() throws IOException {
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.bind(new InetSocketAddress(8080));
+        return serverSocketChannel;
+    }
 
     private MainReactor createMainReactor(ServerSocketChannel serverSocketChannel) throws Exception {
         MainReactor mainReactor = new MainReactor();
@@ -30,12 +36,7 @@ public class NIOServerV3 {
         return mainReactor;
     }
 
-    private ServerSocketChannel initServer() throws IOException {
-        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-        serverSocketChannel.configureBlocking(false);
-        serverSocketChannel.bind(new InetSocketAddress(8080));
-        return serverSocketChannel;
-    }
+
 
     public static void main(String[] args) throws Exception {
         NIOServerV3 v3 = new NIOServerV3();

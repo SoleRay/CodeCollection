@@ -1,6 +1,7 @@
 package queue;
 
 import concurrent.queue.DelayBean;
+import io.netty.util.NettyRuntime;
 
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -21,8 +22,8 @@ public class QueueTest {
 //        queue.offer("str");
 //        queue.poll();
 
-        testSynchronousQueue();
-
+//        testSynchronousQueue();
+        System.out.println(NettyRuntime.availableProcessors());
 //        testDelayQueue();
 
     }
