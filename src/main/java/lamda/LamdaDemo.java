@@ -3,6 +3,7 @@ package lamda;
 import org.apache.poi.ss.formula.functions.T;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -115,6 +116,28 @@ public class LamdaDemo {
         Function<Integer, Integer> self = Function.identity();
         System.out.println(self.apply(5));
 
+
+        /**
+         * 复杂应用
+         * 其实只需记住一点：Function<T,R> 这个T，就是入参
+         * 例如：Function<Integer, Integer> expression = e -> e * 2;
+         * 这个e，就是入参T。
+         * 这个e * 2，就是返回值R
+         * 谨记这两点，就不会错了。
+         *
+         * 下面这个box的test方法，其需要一个Function作为参数，
+         * 而Function所需要的入参T，就是Box的泛型参数T，正式使用的时候用的是Bird
+         * 而test方法又明确规定了，Function的返回值为Bird
+         *
+         * 所以实例化Function的时候，入参为girl对象，返回值为Bird对象
+         *
+         *
+         */
+        Box<Girl> box = new Box();
+        box.test(girl -> {
+            String name = girl.generateName();
+            return girl.catchBird(name);
+        });
 
     }
 
@@ -267,6 +290,33 @@ public class LamdaDemo {
 
         public Bird(String name) {
             this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    interface Girl {
+
+        String generateName();
+
+        Bird catchBird(String name);
+    }
+
+    class Box<T> {
+
+        private String name;
+
+        private T t;
+
+        public void test(Function<T,Bird> function){
+            Bird bird = function.apply(t);
+            System.out.println(bird.getName());
         }
 
         public String getName() {
