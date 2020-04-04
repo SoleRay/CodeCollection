@@ -5,24 +5,44 @@ import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
 
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 public class CompletableFutureTest {
 
+
+    /**
+     * runAsync 异步执行一个Runnable，相当于通过Thread运行一个Runnable
+     * Runnable r = () -> {};
+     * Thread t = new Thread(r)
+     * t.start();
+     */
     @Test
     public void runAsync(){
         CompletableFuture.runAsync(()-> System.out.println("hello"));
     }
 
+    /**
+     * supplyAsync 异步执行一个Supplier，相当于通过Thread运行一个含有Callable的FutureTask
+     * Callable c = () -> {return xxx;};
+     * FutureTask f = new FutureTask(c);
+     * Thread t = new Thread(f);
+     * t.start();
+     * System.out.println(f.get());
+     */
     @Test
     public void supplyAsync() throws Exception {
-
         CompletableFuture<Integer> future = CompletableFuture.supplyAsync(Sum::sumRange);
         System.out.println(future.get());
     }
 
+    /**
+     * thenApply 相当于注册了一个回调，即：当任务完成后，做些什么。这就解决了普通Future需要手工get阻塞，拿到结果以后才能做事情的痛点。
+     */
     @Test
     public void thenApply() throws Exception {
 
@@ -30,6 +50,44 @@ public class CompletableFutureTest {
         System.out.println(future.get());
     }
 
+    /**
+     * complete 用于手工完成某个任务。其核心是set Result的值
+     * 应用场景：两个线程，一个线程用future.get()阻塞。另外一个线程，做完一些事情后，手动调用complete()进行通知。
+     *
+     */
+    @Test
+    public void complete() throws Exception {
+        CompletableFuture<String> future = new CompletableFuture();
+        //第一个线程
+        CompletableFuture.runAsync(()->{
+            String result = null;
+            try {
+                Thread.sleep(3000);//模拟运行任务。。。
+                result = "find the boy...";
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            future.complete(result);
+        });
+
+        //第二个线程
+        CompletableFuture.runAsync(()->{
+            try {
+                //TODO sth....
+                System.out.println(future.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+
+    }
+
+    /**
+     * thenCompose 多个CompletableFuture 串联执行，可以把前一个任务的结果传递给下一个任务，最终拿到最后的future
+     * 注意，是串联执行。
+     */
     @Test
     public void thenCompose() throws Exception {
         CompletableFuture<String> future = CompletableFuture.supplyAsync(Sum::sumRange).thenCompose(s -> CompletableFuture.supplyAsync(() -> s + " dogs cry..."));
@@ -94,8 +152,8 @@ public class CompletableFutureTest {
         System.out.println("Thread "+ resultFuture.get()+" get the ticket");
         stopWatch.stop();
         System.out.println("end in " + stopWatch.getTotalTimeSeconds());
-
     }
+
 
     class TicketTask implements Supplier<Long> {
 
