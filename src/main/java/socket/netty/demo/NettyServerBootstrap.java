@@ -11,11 +11,11 @@ import java.nio.channels.ServerSocketChannel;
  * @author -琴兽-
  *
  */
-public class ServerBootstrap {
+public class NettyServerBootstrap {
 
-private NioSelectorRunnablePool selectorRunnablePool;
+ 	private NioSelectorRunnablePool selectorRunnablePool;
 	
-	public ServerBootstrap(NioSelectorRunnablePool selectorRunnablePool) {
+	public NettyServerBootstrap(NioSelectorRunnablePool selectorRunnablePool) {
 		this.selectorRunnablePool = selectorRunnablePool;
 	}
 	

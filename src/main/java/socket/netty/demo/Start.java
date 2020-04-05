@@ -18,7 +18,7 @@ public class Start {
 		NioSelectorRunnablePool nioSelectorRunnablePool = new NioSelectorRunnablePool(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
 		
 		//获取服务类
-		ServerBootstrap bootstrap = new ServerBootstrap(nioSelectorRunnablePool);
+		NettyServerBootstrap bootstrap = new NettyServerBootstrap(nioSelectorRunnablePool);
 		
 		//绑定端口
 		bootstrap.bind(new InetSocketAddress(8000));

@@ -12,7 +12,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-public class CompletableFutureTest {
+public class CompletableFutureDemo {
 
 
     /**
@@ -52,8 +52,7 @@ public class CompletableFutureTest {
 
     /**
      * complete 用于手工完成某个任务。其核心是set Result的值
-     * 应用场景：两个线程，一个线程用future.get()阻塞。另外一个线程，做完一些事情后，手动调用complete()进行通知。
-     *
+     * 应用场景：两个线程，一个线程用future.get()阻塞。另外一个线程，做完一些事情后，手动调用complete()进行通知
      */
     @Test
     public void complete() throws Exception {
@@ -82,6 +81,29 @@ public class CompletableFutureTest {
             }
         });
 
+    }
+
+    /**
+     * whenComplete 当任务完成时触发事件
+     *
+     *
+     */
+    @Test
+    public void whenComplete() throws Exception {
+
+        CompletableFuture<String> future = new CompletableFuture();
+
+        future.whenComplete((result,throwable)->{
+            if(throwable instanceof RuntimeException){
+                throwable.printStackTrace();
+            }
+
+            System.out.println(result);
+        });
+
+//        future.complete("box");
+//        future.completeExceptionally(new RuntimeException("....."));
+        future.cancel(true);
     }
 
     /**
