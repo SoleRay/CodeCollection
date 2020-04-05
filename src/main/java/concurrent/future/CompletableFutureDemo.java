@@ -42,11 +42,22 @@ public class CompletableFutureDemo {
 
     /**
      * thenApply 相当于注册了一个回调，即：当任务完成后，做些什么。这就解决了普通Future需要手工get阻塞，拿到结果以后才能做事情的痛点。
+     * thenApply 这个回调是有返回值的
      */
     @Test
     public void thenApply() throws Exception {
 
         CompletableFuture<String> future = CompletableFuture.supplyAsync(Sum::sumRange).thenApply(result->result +"，"+ 2);
+        System.out.println(future.get());
+    }
+
+    /**
+     * thenAccept 也是注册了一个回调，跟thenApply的区别是，thenAccept没有返回值
+     */
+    @Test
+    public void thenAccept() throws Exception {
+
+        CompletableFuture<Void> future = CompletableFuture.supplyAsync(Sum::sumRange).thenAccept(result-> System.out.println(result));
         System.out.println(future.get());
     }
 
@@ -86,6 +97,7 @@ public class CompletableFutureDemo {
     /**
      * whenComplete 当任务完成时触发事件
      *
+     * whenComplete可以替代Netty Promise中的listener
      *
      */
     @Test
