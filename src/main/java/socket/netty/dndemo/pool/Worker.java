@@ -1,4 +1,4 @@
-package socket.netty.demo.pool;
+package socket.netty.dndemo.pool;
 
 import java.nio.channels.SocketChannel;
 /**

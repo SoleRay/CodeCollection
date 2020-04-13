@@ -36,16 +36,6 @@ public class NettyServerTest {
                         ch.pipeline().addLast(new StringDecoder());
                         ch.pipeline().addLast(new ChildChannelInboundHandler());
                         ch.pipeline().addLast(new ChildChannelOutboundHandler());
-//                        ch.pipeline().addLast(new SimpleChannelInboundHandler<String>() {
-//
-//                            @Override
-//                            protected void channelRead0(ChannelHandlerContext ctx, String msg) {
-//
-//                                System.out.println(msg);
-//
-//                            }
-//                        });
-
                     }
 
                 }).bind(8000);

@@ -1,7 +1,7 @@
-package socket.netty.demo;
+package socket.netty.dndemo;
 
-import socket.netty.demo.pool.NioSelectorRunnablePool;
-import socket.netty.demo.pool.Worker;
+import socket.netty.dndemo.pool.NioSelectorRunnablePool;
+import socket.netty.dndemo.pool.Worker;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

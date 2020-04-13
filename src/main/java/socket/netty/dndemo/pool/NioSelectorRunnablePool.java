@@ -1,8 +1,8 @@
-package socket.netty.demo.pool;
+package socket.netty.dndemo.pool;
 
 
-import socket.netty.demo.NioServerBoss;
-import socket.netty.demo.NioServerWorker;
+import socket.netty.dndemo.NioServerBoss;
+import socket.netty.dndemo.NioServerWorker;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;

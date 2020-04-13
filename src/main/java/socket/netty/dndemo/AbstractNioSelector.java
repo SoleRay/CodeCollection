@@ -1,6 +1,6 @@
-package socket.netty.demo;
+package socket.netty.dndemo;
 
-import socket.netty.demo.pool.NioSelectorRunnablePool;
+import socket.netty.dndemo.pool.NioSelectorRunnablePool;
 
 import java.io.IOException;
 import java.nio.channels.Selector;

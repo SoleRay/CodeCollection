@@ -25,14 +25,23 @@ public class CompletableFutureTest {
 
             CompletableFuture<String> future = new CompletableFuture();
 
+            executor.execute(()->{
+                invokeTaskA(s, future);
+            });
+
+            /** 故意阻塞，等待taskA先执行完，再为future添加 whenComplete 事件，whenComplete还会触发吗？
+             *
+             *  答：会的。原理应该是类似Netty的Promise的
+             *
+             * */
+            Thread.sleep(5000);
+
             future.whenComplete((result, throwable) -> {
                 invokeTaskB(future, throwable);
                 System.out.println("请输入：");
             });
 
-            executor.execute(()->{
-                invokeTaskA(s, future);
-            });
+
 
             if(exit(executor,scanner,s)){
                 break;

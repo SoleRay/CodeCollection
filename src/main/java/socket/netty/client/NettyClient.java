@@ -3,6 +3,7 @@ package socket.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -28,12 +29,10 @@ public class NettyClient {
                         ch.pipeline().addLast(new StringEncoder());
                     }
                 });
+        ChannelFuture future = bootstrap.connect("127.0.0.1", 8000);
+        Channel channel = future.channel();
 
-        Channel channel = bootstrap.connect("127.0.0.1", 8000).channel();
-
-        while (true) {
-            channel.writeAndFlush(new Date() + ": hello world!");
-            Thread.sleep(2000);
-        }
+        channel.writeAndFlush(new Date() + ": hello world!");
+        channel.close();
     }
 }
