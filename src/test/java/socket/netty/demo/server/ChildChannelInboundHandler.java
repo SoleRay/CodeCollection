@@ -1,4 +1,4 @@
-package socket.netty.server;
+package socket.netty.demo.server;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -42,9 +42,15 @@ public class ChildChannelInboundHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             print(ctx);
-            String returnMsg = "hello girl!!!";
+            String returnMsg = "hello girl!!!" + msg;
             System.out.println("服务器端收到来自客户端的消息："+msg);
             System.out.println("服务器端将向客户端返回消息"+returnMsg);
+
+            if(msg.equals("1")){
+                Thread.sleep(3000);
+            }else if(msg.equals("2")){
+                Thread.sleep(2000);
+            }
             ByteBuf buf = Unpooled.directBuffer(100);
             buf.writeBytes(returnMsg.getBytes());
             ctx.channel().writeAndFlush(buf);

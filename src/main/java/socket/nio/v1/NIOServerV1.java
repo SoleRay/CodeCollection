@@ -30,6 +30,7 @@ public class NIOServerV1 {
         System.out.println("服务器已起动....");
         while(true){
             selector.select();
+            System.out.println("dead loop....");
             Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()){
 
@@ -62,21 +63,21 @@ public class NIOServerV1 {
             /**channel读取到的数据会写入到ByteBuffer中，所以ByteBuffer此时是写模式*/
             int read = readData(socketChannel, byteBuffer);
 
-            if(read==-1){
-                socketChannel.close();
-            }
-            /**byteBuffer的position为0，说明写模式下指针从未移动过，说明没有读到数据，后续就不需要操作了*/
-            if(byteBuffer.position()==0){
-                return;
-            }
-            /**从写模式转化为读模式*/
-            byteBuffer.flip();
-
-            /**对读取的数据进行业务处理*/
-            doBussiness(socketChannel,byteBuffer);
-
-            /**给客户端回应*/
-            doResponse(socketChannel);
+//            if(read==-1){
+//                socketChannel.close();
+//            }
+//            /**byteBuffer的position为0，说明写模式下指针从未移动过，说明没有读到数据，后续就不需要操作了*/
+//            if(byteBuffer.position()==0){
+//                return;
+//            }
+//            /**从写模式转化为读模式*/
+//            byteBuffer.flip();
+//
+//            /**对读取的数据进行业务处理*/
+//            doBussiness(socketChannel,byteBuffer);
+//
+//            /**给客户端回应*/
+//            doResponse(socketChannel);
         }catch (Exception e){
             e.printStackTrace();
             key.channel();

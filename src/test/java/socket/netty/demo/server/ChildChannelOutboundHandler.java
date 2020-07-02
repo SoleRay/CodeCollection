@@ -1,4 +1,4 @@
-package socket.netty.server;
+package socket.netty.demo.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;

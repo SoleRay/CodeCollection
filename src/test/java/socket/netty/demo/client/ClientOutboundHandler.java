@@ -1,4 +1,4 @@
-package socket.netty.server;
+package socket.netty.demo.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -6,11 +6,11 @@ import io.netty.channel.ChannelPromise;
 
 import java.net.SocketAddress;
 
-public class ServerChannelOutboundHandler extends ChannelOutboundHandlerAdapter {
+public class ClientOutboundHandler extends ChannelOutboundHandlerAdapter {
 
     private void print(ChannelHandlerContext ctx){
         String methodName  = Thread.currentThread().getStackTrace()[2].getMethodName();
-        System.out.println(ctx.channel().getClass().getSimpleName()+":"+ methodName+"——"+ctx.channel().localAddress());
+        System.out.println( methodName+"——"+ctx.channel().localAddress());
     }
 
     @Override

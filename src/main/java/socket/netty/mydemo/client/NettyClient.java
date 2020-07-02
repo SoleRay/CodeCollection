@@ -1,4 +1,4 @@
-package socket.netty.client;
+package socket.netty.mydemo.client;
 
 
 import io.netty.bootstrap.Bootstrap;

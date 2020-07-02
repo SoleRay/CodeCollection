@@ -1,19 +1,13 @@
-package socket.netty.client;
+package socket.netty.demo.server;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import java.util.Date;
-import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
-
-
-public class ClientInboundHandler extends ChannelInboundHandlerAdapter {
+public class ServerChannelInboundHandler extends ChannelInboundHandlerAdapter {
 
         private void print(ChannelHandlerContext ctx){
             String methodName  = Thread.currentThread().getStackTrace()[2].getMethodName();
-            System.out.println( methodName+"——"+ctx.channel().localAddress());
+            System.out.println( ctx.channel().getClass().getSimpleName()+":"+methodName+"——"+ctx.channel().localAddress());
         }
 
         @Override
@@ -43,23 +37,7 @@ public class ClientInboundHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             print(ctx);
-
-//            CompletableFuture future = CompletableFuture.runAsync(()->{
-                ByteBuf byteBuf = (ByteBuf) msg;
-                byte[] bytes = new byte[byteBuf.writerIndex()];
-                try{
-                    byteBuf.readBytes(bytes,0,byteBuf.writerIndex());
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                String content = new String(bytes);
-                System.out.println("客户端收到服务器端的消息："+content);
-//            }).thenRun(()->{
-//                System.out.println("请输入");
-//                Scanner scanner = new Scanner(System.in);
-//                String s = scanner.nextLine();
-//                ctx.channel().writeAndFlush(new Date() + ": hello world!");
-//            });
+            super.channelRead(ctx, msg);
         }
 
         @Override
