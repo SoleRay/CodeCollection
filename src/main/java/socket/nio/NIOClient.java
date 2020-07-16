@@ -23,7 +23,7 @@ public class NIOClient {
         SocketChannel channel = SocketChannel.open();
         channel.configureBlocking(false);
         channel.register(selector, SelectionKey.OP_CONNECT);
-        channel.connect(new InetSocketAddress("localhost",8080));
+        channel.connect(new InetSocketAddress("localhost",8000));
     }
 
     private void run(Selector selector) throws IOException {
@@ -59,10 +59,11 @@ public class NIOClient {
     private void handleWriteable(SelectionKey key, SocketChannel channel) throws IOException {
         ByteBuffer byteBuffer = (ByteBuffer) key.attachment();
         byteBuffer.clear();
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("请输入:");
-        String msg = scanner.nextLine();
-        scanner.close();
+//        Scanner scanner = new Scanner(System.in);
+//        System.out.print("请输入:");
+//        String msg = scanner.nextLine();
+//        scanner.close();
+        String msg = "aaaaa";
         byteBuffer.put(msg.getBytes("UTF-8"));
         byteBuffer.flip();
         while (byteBuffer.hasRemaining()) {

@@ -29,10 +29,9 @@ public class NettyClient {
                         ch.pipeline().addLast(new StringEncoder());
                     }
                 });
-        ChannelFuture future = bootstrap.connect("127.0.0.1", 8000);
-        Channel channel = future.channel();
-
+        Channel channel= bootstrap.connect("127.0.0.1", 8000).sync().channel();
         channel.writeAndFlush(new Date() + ": hello world!");
-        channel.close();
+        channel.closeFuture().sync();
+
     }
 }

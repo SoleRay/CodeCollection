@@ -1,6 +1,7 @@
 package socket.netty.mydemo.server;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -8,44 +9,43 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
+import socket.netty.mydemo.handler.InBoundHandlerA;
+import socket.netty.mydemo.handler.InBoundHandlerB;
+import socket.netty.mydemo.handler.OutBoundHandlerA;
+import socket.netty.mydemo.handler.OutBoundHandlerB;
 
 /**
  * Created by Administrator on 2016-10-28.
  */
 public class NettyServer {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         ServerBootstrap bootstrap = new ServerBootstrap();
 
-        NioEventLoopGroup boss = new NioEventLoopGroup();
+        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
 
-        NioEventLoopGroup worker = new NioEventLoopGroup();
+        NioEventLoopGroup workerGroup = new NioEventLoopGroup();
 
-        bootstrap.group(boss,worker)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<NioSocketChannel>() {
+        try{
+            bootstrap.group(bossGroup, workerGroup)
+            .channel(NioServerSocketChannel.class)
+            .childHandler(new ChannelInitializer<NioSocketChannel>() {
 
-                    protected void initChannel(NioSocketChannel ch) {
+                @Override
+                protected void initChannel(NioSocketChannel ch) {
+                    ch.pipeline().addLast(new InBoundHandlerA());
+                    ch.pipeline().addLast(new InBoundHandlerB());
+                    ch.pipeline().addLast(new OutBoundHandlerA());
+                    ch.pipeline().addLast(new OutBoundHandlerB());
+                }
+            });
 
-                        ch.pipeline().addLast(new StringDecoder());
-                        ch.pipeline().addLast(new SimpleChannelInboundHandler<String>() {
-
-                            @Override
-
-                            protected void channelRead0(ChannelHandlerContext ctx, String msg) {
-
-                                System.out.println(msg);
-
-                            }
-                        });
-
-                    }
-
-                }).bind(8000);
-
-
-
-
+            Channel channel = bootstrap.bind(8000).sync().channel();
+            channel.closeFuture().sync();
+        }finally {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
+        }
     }
 
 

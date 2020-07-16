@@ -90,7 +90,7 @@ public final class HttpSnoopClient {
             String smallContent = createContent(smallThreshold);
             String largeContent = createContent(largeThreshold);
             send(uri, host, ch, httpMethod, smallContent);
-            send(uri, host, ch, httpMethod, largeContent);
+//            send(uri, host, ch, httpMethod, largeContent);
 //            for(int i=0;i<10;i++){
 //
 //                if(i%2==0){
