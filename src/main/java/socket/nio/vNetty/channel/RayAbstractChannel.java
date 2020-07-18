@@ -12,9 +12,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public abstract class RayAbstractChannel implements RayChannel{
 
-    private RayEventLoop eventLoop;
+    protected RayEventLoop eventLoop;
 
-    private SelectableChannel channel;
+    protected SelectableChannel channel;
 
     protected SelectionKey selectionKey;
 

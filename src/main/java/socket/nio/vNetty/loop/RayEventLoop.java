@@ -1,8 +1,11 @@
 package socket.nio.vNetty.loop;
 
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import socket.nio.vNetty.channel.RayAbstractChannel;
 import socket.nio.vNetty.channel.RayChannel;
 import socket.nio.vNetty.channel.RaySocketChannel;
+import socket.nio.vNetty.group.RayEventLoopGroup;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -21,10 +24,13 @@ public class RayEventLoop implements Runnable {
 
     private Queue<Runnable> queue;
 
-    public RayEventLoop() throws Exception {
-        selector = SelectorProvider.provider().openSelector();
-        queue = new LinkedBlockingQueue<>();
-        thread = new Thread(this);
+    private RayEventLoopGroup eventLoopGroup;
+
+    public RayEventLoop(RayEventLoopGroup eventLoopGroup) throws Exception {
+        this.selector = SelectorProvider.provider().openSelector();
+        this.eventLoopGroup = eventLoopGroup;
+        this.queue = new LinkedBlockingQueue<>();
+        this.thread = new Thread(this);
         thread.start();
     }
 
@@ -66,6 +72,7 @@ public class RayEventLoop implements Runnable {
         }
     }
 
+
     private void processSelectedKeys() throws IOException {
         System.out.println("开始处理channel读写事件");
 
@@ -74,35 +81,49 @@ public class RayEventLoop implements Runnable {
 
         while (iterator.hasNext()){
             SelectionKey key = iterator.next();
-            RayAbstractChannel channel = (RayAbstractChannel) key.attachment();
+            RayChannel channel = (RayChannel) key.attachment();
             iterator.remove();
 
-            if(key.isReadable()){
+            if(key.isReadable() || key.isAcceptable()){
                 channel.read();
-                key.interestOps(SelectionKey.OP_WRITE);
             }
 
             if(key.isWritable()){
                 channel.write();
-                key.interestOps(SelectionKey.OP_READ);
             }
         }
-    }
-
-    private int readData(SocketChannel channel, ByteBuffer buffer) throws IOException {
-        int readNum ;
-        do{
-            readNum = channel.read(buffer);
-
-            System.out.println("readNum:"+readNum);
-            if(buffer.position()>0){
-                break;
-            }
-        }while (channel.isOpen() && readNum!=-1);
-        return readNum;
     }
 
     public Selector selector() {
         return selector;
     }
+
+    /**
+     * 合并前（accept 和read write 分开之前的代码）
+     * @throws IOException
+     */
+//    private void processSelectedKeys() throws IOException {
+//        System.out.println("开始处理channel读写事件");
+//
+//        Set<SelectionKey> selectionKeys = selector.selectedKeys();
+//        Iterator<SelectionKey> iterator = selectionKeys.iterator();
+//
+//        while (iterator.hasNext()){
+//            SelectionKey key = iterator.next();
+//            RayAbstractChannel channel = (RayAbstractChannel) key.attachment();
+//            iterator.remove();
+//
+//            if(key.isReadable()){
+//                channel.read();
+//                key.interestOps(SelectionKey.OP_WRITE);
+//            }
+//
+//            if(key.isWritable()){
+//                channel.write();
+//                key.interestOps(SelectionKey.OP_READ);
+//            }
+//        }
+//    }
+
+
 }

@@ -14,7 +14,7 @@ public class RayEventLoopGroup {
 
     public RayEventLoopGroup() throws Exception {
         for (int i = 0; i < children.length; i++) {
-            children[i] = new RayEventLoop();
+            children[i] = new RayEventLoop(this);
         }
     }
 

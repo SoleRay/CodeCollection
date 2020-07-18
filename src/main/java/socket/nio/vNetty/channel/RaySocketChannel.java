@@ -41,6 +41,7 @@ public class RaySocketChannel extends RayAbstractChannel {
 
         }catch (IOException e){
             channel.close();
+            selectionKey.cancel();
             throw e;
         }
     }
