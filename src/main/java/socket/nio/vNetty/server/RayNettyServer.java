@@ -1,6 +1,8 @@
 package socket.nio.vNetty.server;
 
-import socket.nio.vNetty.loop.EventLoop;
+import socket.nio.vNetty.channel.RaySocketChannel;
+import socket.nio.vNetty.group.RayEventLoopGroup;
+import socket.nio.vNetty.loop.RayEventLoop;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,7 +14,7 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
 import java.util.Set;
 
-public class NettyServer {
+public class RayNettyServer {
 
     public static void main(String[] args) throws Exception {
 
@@ -24,7 +26,7 @@ public class NettyServer {
     }
 
     private static void run(Selector selector) throws Exception {
-        EventLoop eventLoop = new EventLoop();
+        RayEventLoopGroup eventLoopGroup = new RayEventLoopGroup();
 
         while(true){
             try {
@@ -42,7 +44,8 @@ public class NettyServer {
                         ServerSocketChannel channel = (ServerSocketChannel) key.channel();
                         SocketChannel socketChannel = channel.accept();
                         socketChannel.configureBlocking(false);
-                        eventLoop.register(socketChannel,SelectionKey.OP_READ);
+                        RaySocketChannel raySocketChannel = new RaySocketChannel(socketChannel, SelectionKey.OP_READ);
+                        eventLoopGroup.register(raySocketChannel);
                     }
                 }
             } catch (IOException e) {

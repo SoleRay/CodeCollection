@@ -1,5 +1,9 @@
 package socket.nio.vNetty.loop;
 
+import socket.nio.vNetty.channel.RayAbstractChannel;
+import socket.nio.vNetty.channel.RayChannel;
+import socket.nio.vNetty.channel.RaySocketChannel;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
@@ -9,7 +13,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class EventLoop implements Runnable {
+public class RayEventLoop implements Runnable {
 
     private Selector selector;
 
@@ -17,21 +21,18 @@ public class EventLoop implements Runnable {
 
     private Queue<Runnable> queue;
 
-    public EventLoop() throws Exception {
+    public RayEventLoop() throws Exception {
         selector = SelectorProvider.provider().openSelector();
         queue = new LinkedBlockingQueue<>();
         thread = new Thread(this);
         thread.start();
     }
 
-    public void register(SocketChannel socketChannel,int ops)  {
+    public void register(RayChannel channel)  {
         queue.add(()->{
-            try {
-                System.out.println("开始运行注册任务...");
-                socketChannel.register(selector,ops);
-            } catch (ClosedChannelException e) {
-                e.printStackTrace();
-            }
+            System.out.println("开始运行注册任务...");
+            channel.register(this);
+
         });
         selector.wakeup();
     }
@@ -73,50 +74,16 @@ public class EventLoop implements Runnable {
 
         while (iterator.hasNext()){
             SelectionKey key = iterator.next();
-            SocketChannel channel = (SocketChannel)key.channel();
-
+            RayAbstractChannel channel = (RayAbstractChannel) key.attachment();
             iterator.remove();
 
             if(key.isReadable()){
-                System.out.println("检测到key的可读事件....");
-
-                ByteBuffer buffer = ByteBuffer.allocate(1024);
-
-                int readNum = readData(channel, buffer);
-
-                if(readNum==-1){
-                    channel.close();
-                }
-
-                /**byteBuffer的position为0，说明写模式下指针从未移动过，说明没有读到数据，后续就不需要操作了*/
-                if(buffer.position()==0){
-                    return;
-                }
-
-
-                buffer.flip();
-                byte[] bytes = new byte[readNum];
-                buffer.get(bytes,0,readNum);
-                System.out.println("收到消息：" + new String(bytes));
-
-                key.attach(bytes);
-
+                channel.read();
                 key.interestOps(SelectionKey.OP_WRITE);
             }
 
             if(key.isWritable()){
-                System.out.println("检测到key的可写事件....");
-
-                byte[] bytes = (byte[]) key.attachment();
-                key.attach(null);
-
-                System.out.println("可写事件发生，向客户端写入数据："+new String(bytes));
-
-                if(bytes!=null){
-                    channel.write(ByteBuffer.wrap(bytes));
-                }
-
-
+                channel.write();
                 key.interestOps(SelectionKey.OP_READ);
             }
         }
@@ -133,5 +100,9 @@ public class EventLoop implements Runnable {
             }
         }while (channel.isOpen() && readNum!=-1);
         return readNum;
+    }
+
+    public Selector selector() {
+        return selector;
     }
 }

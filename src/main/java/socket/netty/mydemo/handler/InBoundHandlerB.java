@@ -8,6 +8,7 @@ public class InBoundHandlerB extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println("InBoundHandlerB read....");
+        System.out.println(msg);
         super.channelRead(ctx, msg);
     }
 }
