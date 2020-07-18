@@ -1,8 +1,5 @@
 package socket.nio.vNetty.channel;
 
-import socket.nio.vNetty.loop.RayEventLoop;
-import socket.nio.vNetty.server.RayBootStrap;
-
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -21,11 +18,7 @@ public class RayServerSocketChannel extends RayAbstractChannel {
         SocketChannel socketChannel = channel.accept();
         socketChannel.configureBlocking(false);
         RaySocketChannel raySocketChannel = new RaySocketChannel(socketChannel, SelectionKey.OP_READ);
-
-
-
-
-//        RayBootStrap.RayServerBootstrapAcceptor acceptor = new RayBootStrap.RayServerBootstrapAcceptor();
+        pipeline().fireChannelRead(raySocketChannel);
     }
 
     @Override

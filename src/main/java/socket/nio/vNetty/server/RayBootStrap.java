@@ -3,14 +3,14 @@ package socket.nio.vNetty.server;
 import socket.nio.vNetty.channel.RayChannel;
 import socket.nio.vNetty.channel.RayServerSocketChannel;
 import socket.nio.vNetty.group.RayEventLoopGroup;
+import socket.nio.vNetty.pipeline.context.RayAbstractChannelHandlerContext;
+import socket.nio.vNetty.pipeline.handler.RayChannelHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 
 public class RayBootStrap {
 
@@ -40,11 +40,15 @@ public class RayBootStrap {
         serverSocketChannel.bind(localAddress);
         RayServerSocketChannel rayServerSocketChannel = new RayServerSocketChannel(serverSocketChannel,SelectionKey.OP_ACCEPT);
         bossGroup.register(rayServerSocketChannel);
+
+        rayServerSocketChannel.pipeline().addLast(new RayServerBootstrapAcceptor());
     }
 
-    public class RayServerBootstrapAcceptor{
+    public class RayServerBootstrapAcceptor implements RayChannelHandler {
 
-        public void register(RayChannel channel){
+        @Override
+        public void channelRead(RayAbstractChannelHandlerContext ctx, Object msg) {
+            RayChannel channel = (RayChannel) msg;
             workGroup.register(channel);
         }
     }

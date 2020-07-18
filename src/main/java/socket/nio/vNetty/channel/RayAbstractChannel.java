@@ -1,6 +1,8 @@
 package socket.nio.vNetty.channel;
 
 import socket.nio.vNetty.loop.RayEventLoop;
+import socket.nio.vNetty.pipeline.RayChannelPipeline;
+import socket.nio.vNetty.pipeline.RayDefaultChannelPipeline;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -22,10 +24,13 @@ public abstract class RayAbstractChannel implements RayChannel{
 
     protected Queue<ByteBuffer> writeQueue;
 
+    private RayChannelPipeline pipeline;
+
     public RayAbstractChannel(SelectableChannel channel,int interestOps) {
         this.channel = channel;
         this.interestOps = interestOps;
         writeQueue = new LinkedBlockingQueue<>();
+        pipeline = new RayDefaultChannelPipeline(this);
     }
 
     @Override
@@ -51,4 +56,8 @@ public abstract class RayAbstractChannel implements RayChannel{
 
     @Override
     public abstract void write() throws IOException;
+
+    public RayChannelPipeline pipeline() {
+        return pipeline;
+    }
 }
