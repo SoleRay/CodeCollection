@@ -20,6 +20,8 @@ public class RayBootStrap {
 
     private RayEventLoopGroup workGroup;
 
+
+
     public RayBootStrap(RayEventLoopGroup bossGroup, RayEventLoopGroup workGroup) {
         this.bossGroup = bossGroup;
         this.workGroup = workGroup;
@@ -51,5 +53,12 @@ public class RayBootStrap {
             RayChannel channel = (RayChannel) msg;
             workGroup.register(channel);
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        RayEventLoopGroup bossGroup = new RayEventLoopGroup(1,"AcceptorEventLoopGroup","AcceptorEventLoop");
+        RayEventLoopGroup workGroup = new RayEventLoopGroup("DataEventLoopGroup","DataEventLoop");
+        RayBootStrap bootStrap = new RayBootStrap(bossGroup,workGroup);
+        bootStrap.bind(8000);
     }
 }

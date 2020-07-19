@@ -26,17 +26,27 @@ public class RayEventLoop implements Runnable {
 
     private RayEventLoopGroup eventLoopGroup;
 
+    private String namePrefix = "EventLoop";
+
+    private String eventLoopName;
+
     public RayEventLoop(RayEventLoopGroup eventLoopGroup) throws Exception {
+        this(eventLoopGroup,null);
+    }
+
+    public RayEventLoop(RayEventLoopGroup eventLoopGroup, String namePrefix) throws Exception {
         this.selector = SelectorProvider.provider().openSelector();
         this.eventLoopGroup = eventLoopGroup;
+        this.namePrefix = namePrefix==null?this.namePrefix:namePrefix;
         this.queue = new LinkedBlockingQueue<>();
         this.thread = new Thread(this);
         thread.start();
     }
 
     public void register(RayChannel channel)  {
+        System.out.println();
         queue.add(()->{
-            System.out.println("开始运行注册任务...");
+            System.out.println(eventLoopName+":开始将channel注册到selector上");
             channel.register(this);
 
         });
@@ -45,11 +55,13 @@ public class RayEventLoop implements Runnable {
 
     @Override
     public void run() {
+        eventLoopName = namePrefix + "—" + Thread.currentThread().getName();
+
         while(!thread.isInterrupted()){
             try {
-                System.out.println("正在查询IO事件....");
+                System.out.println(eventLoopName+":正在查询IO事件....");
                 int eventNum = selector.select();
-                System.out.println("系统发生的IO事件数量："+eventNum);
+                System.out.println(eventLoopName+":当前发生的IO事件数量："+eventNum);
 
                 if(eventNum == 0){
                     runTasks();
@@ -74,7 +86,7 @@ public class RayEventLoop implements Runnable {
 
 
     private void processSelectedKeys() throws IOException {
-        System.out.println("开始处理channel读写事件");
+        System.out.println(eventLoopName+":开始处理channel读写事件");
 
         Set<SelectionKey> selectionKeys = selector.selectedKeys();
         Iterator<SelectionKey> iterator = selectionKeys.iterator();
