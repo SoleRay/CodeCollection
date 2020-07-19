@@ -31,25 +31,20 @@ public class RayEventLoop implements Runnable {
     private String eventLoopName;
 
     public RayEventLoop(RayEventLoopGroup eventLoopGroup) throws Exception {
-        this(eventLoopGroup,null);
-    }
-
-    public RayEventLoop(RayEventLoopGroup eventLoopGroup, String namePrefix) throws Exception {
         this.selector = SelectorProvider.provider().openSelector();
         this.eventLoopGroup = eventLoopGroup;
-        this.namePrefix = namePrefix==null?this.namePrefix:namePrefix;
+        this.namePrefix = eventLoopGroup.eventLoopNamePrefix()==null?this.namePrefix:eventLoopGroup.eventLoopNamePrefix();
         this.queue = new LinkedBlockingQueue<>();
         this.thread = new Thread(this);
         thread.start();
     }
 
     public void register(RayChannel channel)  {
-        System.out.println();
         queue.add(()->{
             System.out.println(eventLoopName+":开始将channel注册到selector上");
             channel.register(this);
-
         });
+
         selector.wakeup();
     }
 
@@ -108,6 +103,10 @@ public class RayEventLoop implements Runnable {
 
     public Selector selector() {
         return selector;
+    }
+
+    public String eventLoopName() {
+        return eventLoopName;
     }
 
     /**

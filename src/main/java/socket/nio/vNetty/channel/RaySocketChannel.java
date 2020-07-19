@@ -16,7 +16,7 @@ public class RaySocketChannel extends RayAbstractChannel {
 
     @Override
     public void read() throws IOException{
-        System.out.println("检测到key的可读事件....");
+        System.out.println(eventLoop.eventLoopName()+":检测到key的可读事件....");
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         SocketChannel channel = (SocketChannel) javaChannel();
 
@@ -33,7 +33,8 @@ public class RaySocketChannel extends RayAbstractChannel {
                 return;
             }
             /** 对消息进行处理 */
-            processMsg(buffer);
+            pipeline().fireChannelRead(buffer);
+//            processMsg(buffer);
 
             writeQueue.add(ByteBuffer.wrap("OK".getBytes()));
 
@@ -50,7 +51,7 @@ public class RaySocketChannel extends RayAbstractChannel {
         buffer.flip();
         byte[] bytes = new byte[buffer.limit()];
         buffer.get(bytes,0,buffer.limit());
-        System.out.println("收到消息：" + new String(bytes));
+        System.out.println(eventLoop.eventLoopName()+":收到消息：" + new String(bytes));
     }
 
     private int readBytes(SocketChannel channel, ByteBuffer buffer)  {
@@ -64,7 +65,7 @@ public class RaySocketChannel extends RayAbstractChannel {
                 return 0;
             }
 
-            System.out.println("readNum:"+readNum);
+            System.out.println(eventLoop.eventLoopName()+":readNum:"+readNum);
             if(buffer.position()>0){
                 break;
             }
@@ -74,7 +75,7 @@ public class RaySocketChannel extends RayAbstractChannel {
 
     @Override
     public void write() throws IOException {
-        System.out.println("检测到key的可写事件....");
+        System.out.println(eventLoop.eventLoopName()+":检测到key的可写事件....");
 
         SocketChannel channel = (SocketChannel) javaChannel();
 

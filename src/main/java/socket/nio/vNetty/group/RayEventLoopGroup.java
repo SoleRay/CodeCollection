@@ -40,7 +40,7 @@ public class RayEventLoopGroup {
         this.nThreads = nThreads;
         children = new RayEventLoop[nThreads];
         for (int i = 0; i < children.length; i++) {
-            children[i] = new RayEventLoop(this,eventLoopNamePrefix);
+            children[i] = new RayEventLoop(this);
         }
     }
 
@@ -51,5 +51,13 @@ public class RayEventLoopGroup {
     public void register(RayChannel channel){
         System.out.println(eventLoopGroupName+":正在选取eventLoop对channel进行注册....");
         next().register(channel);
+    }
+
+    public String eventLoopGroupName() {
+        return eventLoopGroupName;
+    }
+
+    public String eventLoopNamePrefix() {
+        return eventLoopNamePrefix;
     }
 }
