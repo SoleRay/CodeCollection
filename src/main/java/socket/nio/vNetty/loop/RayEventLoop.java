@@ -6,6 +6,7 @@ import socket.nio.vNetty.channel.RayAbstractChannel;
 import socket.nio.vNetty.channel.RayChannel;
 import socket.nio.vNetty.channel.RaySocketChannel;
 import socket.nio.vNetty.group.RayEventLoopGroup;
+import socket.nio.vNetty.pipeline.handler.RayChannelInitializer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -36,16 +37,33 @@ public class RayEventLoop implements Runnable {
         this.namePrefix = eventLoopGroup.eventLoopNamePrefix()==null?this.namePrefix:eventLoopGroup.eventLoopNamePrefix();
         this.queue = new LinkedBlockingQueue<>();
         this.thread = new Thread(this);
-        thread.start();
+//        thread.start();//等需要的时候再启动，可以避免资源浪费
     }
 
     public void register(RayChannel channel)  {
-        queue.add(()->{
-            System.out.println(eventLoopName+":开始将channel注册到selector上");
-            channel.register(this);
-        });
 
+        if(inEventLoop()){
+            register0(channel);
+        }else {
+            thread.start();
+            queue.add(()->{
+                register0(channel);
+            });
+        }
+
+        /**
+         * 哪怕是先wakeup()，再执行select()，也是可以的
+         */
         selector.wakeup();
+    }
+
+    private void register0(RayChannel channel) {
+        System.out.println(eventLoopName+":开始将channel注册到selector上");
+
+        channel.register(this);
+
+        channel.pipeline().invokeHandlerAddedIfNeeded();
+
     }
 
     @Override
@@ -107,6 +125,10 @@ public class RayEventLoop implements Runnable {
 
     public String eventLoopName() {
         return eventLoopName;
+    }
+
+    public boolean inEventLoop(){
+        return Thread.currentThread() == this.thread;
     }
 
     /**

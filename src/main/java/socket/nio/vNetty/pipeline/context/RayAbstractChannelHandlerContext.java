@@ -1,7 +1,9 @@
 package socket.nio.vNetty.pipeline.context;
 
+import socket.nio.vNetty.channel.RayChannel;
 import socket.nio.vNetty.pipeline.RayChannelPipeline;
 import socket.nio.vNetty.pipeline.handler.RayChannelHandler;
+import socket.nio.vNetty.pipeline.handler.RayChannelInboundHandler;
 
 public abstract class RayAbstractChannelHandlerContext implements RayChannelHandlerContext {
 
@@ -21,14 +23,30 @@ public abstract class RayAbstractChannelHandlerContext implements RayChannelHand
     @Override
     public void fireChannelRead(Object msg){
         if(next != null && next.handler !=null ){
-            next.handler.channelRead(next,msg);
+            ((RayChannelInboundHandler) next.handler).channelRead(next,msg);
         }
+    }
+
+    @Override
+    public RayChannel channel() {
+        return pipeline.channel();
+    }
+
+    @Override
+    public RayChannelPipeline pipeline() {
+        return pipeline;
+    }
+
+    @Override
+    public RayChannelHandler handler() {
+        return handler;
     }
 
     public void setNext(RayAbstractChannelHandlerContext context){
         next = context;
     }
 
+    @Override
     public RayAbstractChannelHandlerContext next(){
         return next;
     }
@@ -37,6 +55,7 @@ public abstract class RayAbstractChannelHandlerContext implements RayChannelHand
         prev = context;
     }
 
+    @Override
     public RayAbstractChannelHandlerContext prev(){
         return prev;
     }

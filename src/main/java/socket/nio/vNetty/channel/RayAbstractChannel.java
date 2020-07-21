@@ -47,6 +47,7 @@ public abstract class RayAbstractChannel implements RayChannel{
         return channel;
     }
 
+    @Override
     public RayEventLoop eventLoop() {
         return eventLoop;
     }
@@ -57,6 +58,7 @@ public abstract class RayAbstractChannel implements RayChannel{
     @Override
     public abstract void write() throws IOException;
 
+    @Override
     public RayChannelPipeline pipeline() {
         return pipeline;
     }
