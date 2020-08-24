@@ -22,6 +22,8 @@
 	<properties>
 		<spring.version>5.0.2.RELEASE</spring.version>
 		<tomcat.version>9.0.0.M10</tomcat.version>
+		<log4j.version>2.13.3</log4j.version>
+		<slf4j.version>1.7.30</slf4j.version>
 	</properties>
 
 	<dependencies>
@@ -202,23 +204,44 @@
 			<version>2.6</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+
+		<!--slf4j-log4j12 这个包不能和 log4j-slf4j-impl 同时用 -->
+<!--		<dependency>-->
+<!--			<groupId>org.slf4j</groupId>-->
+<!--			<artifactId>slf4j-log4j12</artifactId>-->
+<!--			<version>${slf4j.version}</version>-->
+<!--			<scope>runtime</scope>-->
+<!--		</dependency>-->
+
 		<!--log4j 2 start -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>2.10.0</version>
+			<version>${log4j.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.10.0</version>
+			<version>${log4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-web</artifactId>
-			<version>2.10.0</version>
+			<version>${log4j.version}</version>
 		</dependency>
 		<!--log4j 2 end -->
 
