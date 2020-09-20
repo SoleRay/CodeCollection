@@ -14,12 +14,12 @@ public class DelayBean<T> implements Delayed {
 
     private long activeTime;
 
-    public DelayBean(String id, String name, T data, long activeTime) {
+    public DelayBean(String id, String name, T data, long period) {
         this.id = id;
         this.name = name;
         this.data = data;
         this.activeTime = System.nanoTime() +
-                TimeUnit.NANOSECONDS.convert(activeTime, TimeUnit.MILLISECONDS);
+                TimeUnit.NANOSECONDS.convert(period, TimeUnit.MILLISECONDS);
     }
 
     @Override
