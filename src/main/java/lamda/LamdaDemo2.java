@@ -1,11 +1,14 @@
 package lamda;
 
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 public class LamdaDemo2 {
@@ -14,8 +17,15 @@ public class LamdaDemo2 {
 
         private int age;
 
+        private String name;
+
         public Person(int age) {
             this.age = age;
+        }
+
+        public Person(int age, String name) {
+            this.age = age;
+            this.name = name;
         }
 
         public Integer getAge() {
@@ -24,6 +34,14 @@ public class LamdaDemo2 {
 
         public void setAge(int age) {
             this.age = age;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
     }
 
@@ -50,14 +68,15 @@ public class LamdaDemo2 {
 
     }
 
+    @Test
     public void test2(){
-        List<Person> peoples = Arrays.asList(new Person[]{new Person(5),new Person(6)});
+        List<Person> peoples = Arrays.asList(new Person[]{new Person(5,"box"),new Person(1,"box")});
         Will<Person> will = new Will<>(peoples);
 
-//        Compare<Person> c = (Person p1,Person p2)->{
-//            return p1.getAge()-p2.getAge();
-//        };
+        long c = peoples.stream().filter((person) -> person.age > 3)
+                .filter((person) -> person.name.equals("box")).sorted().count();
 
+        System.out.println(c);
     }
 
 

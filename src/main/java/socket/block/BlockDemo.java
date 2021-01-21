@@ -10,12 +10,12 @@ public class BlockDemo {
     public static void main(String[] args) {
 
 
-        String resource = "1.txt";
+        String resource = "2.txt";
 
         Runnable runnable = () -> {
             InputStream is = null;
             try {
-                is = FileUtil.getFileStreamUnderResources("1.txt");
+                is = FileUtil.getFileStreamUnderResources("2.txt");
 //                LockSupport.park();
             } catch (Exception e) {
                 e.printStackTrace();

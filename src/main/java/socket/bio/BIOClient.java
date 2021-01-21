@@ -18,7 +18,7 @@ public class BIOClient {
         String msg = scanner.nextLine() + "\n";
         out.write(msg.getBytes(charset)); // 阻塞，写完成
         scanner.close();
-        out.write("bye\n".getBytes());
+        out.write("bye\n\r".getBytes());
 
         InputStream inputStream = s.getInputStream();
         byte[] data = new byte[1024];
@@ -26,7 +26,11 @@ public class BIOClient {
         while ((len = inputStream.read(data)) > 0) {
             System.out.println(new String(data));
         }
-        s.close();
+        Object o = new Object();
+        synchronized (o){
+            o.wait();
+        }
+//        s.close();
     }
 
 }

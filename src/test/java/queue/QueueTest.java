@@ -3,6 +3,8 @@ package queue;
 import concurrent.queue.DelayBean;
 import io.netty.util.NettyRuntime;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
@@ -23,8 +25,8 @@ public class QueueTest {
 //        queue.poll();
 
 //        testSynchronousQueue();
-        System.out.println(NettyRuntime.availableProcessors());
-//        testDelayQueue();
+//        System.out.println(NettyRuntime.availableProcessors());
+        testDelayQueue();
 
     }
 
@@ -33,49 +35,49 @@ public class QueueTest {
 
         DelayQueue<DelayBean<String>> queue = new DelayQueue<>();
 
-        Runnable cr2 = () -> {
+//        Runnable cr2 = () -> {
+//
+//            LockSupport.park();
+//
+//            try {
+//                Thread.sleep(2000);
+//                DelayBean<String> bean = queue.take();
+//                System.out.println("Thread C2:" + bean.getData());
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        };
+//
+//        Thread c2 = new Thread(cr2);
 
-            LockSupport.park();
-
-            try {
-                Thread.sleep(2000);
-                DelayBean<String> bean = queue.take();
-                System.out.println("Thread C2:" + bean.getData());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        };
-
-        Thread c2 = new Thread(cr2);
-
-        Runnable cr = () -> {
-
-            LockSupport.park();
-            long t1 = System.currentTimeMillis();
-
-            try {
-                DelayBean<String> bean = queue.take();
-                System.out.println("Thread C1:" + bean.getData());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            long t2 = System.currentTimeMillis();
-
-            long diff = t2 - t1;
-
-            System.out.println("take cost " + TimeUnit.MILLISECONDS.convert(diff, TimeUnit.MILLISECONDS));
-
-        };
+//        Runnable cr = () -> {
+//
+//            LockSupport.park();
+//            long t1 = System.currentTimeMillis();
+//
+//            try {
+//                DelayBean<String> bean = queue.take();
+//                System.out.println("Thread C1:" + bean.getData());
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            long t2 = System.currentTimeMillis();
+//
+//            long diff = t2 - t1;
+//
+//            System.out.println("take cost " + TimeUnit.MILLISECONDS.convert(diff, TimeUnit.MILLISECONDS));
+//
+//        };
 
 
-        Thread c = new Thread(cr);
+//        Thread c = new Thread(cr);
 
 
         Runnable pr = () -> {
             DelayBean<String> d1 = new DelayBean<>("1", "bob", "east", 5000);
             queue.put(d1);
-            LockSupport.unpark(c);
-            LockSupport.unpark(c2);
+//            LockSupport.unpark(c);
+//            LockSupport.unpark(c2);
         };
 
 
@@ -83,8 +85,18 @@ public class QueueTest {
 
 
         p.start();
-        c.start();
-        c2.start();
+//        c.start();
+//        c2.start();
+
+        Thread.sleep(6000);
+        List<DelayBean> list = new ArrayList<>();
+        queue.drainTo(list);
+        DelayBean delayBean = list.get(0);
+        if (delayBean != null) {
+            System.out.println(delayBean.getData());
+        }else {
+            System.out.println("delayBean is null");
+        }
     }
 
 

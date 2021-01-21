@@ -5,17 +5,21 @@ import org.apache.poi.ss.formula.functions.Count;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LockTest {
 
-    private static ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static ReentrantLock lock = new ReentrantLock(true);
 
-    private static Lock r = lock.readLock();
+    private static ReadWriteLock rwlock = new ReentrantReadWriteLock();
 
-    private static Lock w = lock.writeLock();
+    private static Lock r = rwlock.readLock();
+
+    private static Lock w = rwlock.writeLock();
 
     private static CountDownLatch c = new CountDownLatch(1);
+
 
     private static class ReadRun implements Runnable{
 
@@ -68,18 +72,35 @@ public class LockTest {
 
     public static void main(String[] args) {
 
-        Thread r1 = new Thread(new ReadRun());
-        Thread r2 = new Thread(new ReadRun());
-        Thread r3 = new Thread(new ReadRun());
-//        Thread wt = new Thread(new WriteRun());
+//        Thread r1 = new Thread(new ReadRun());
+//        Thread r2 = new Thread(new ReadRun());
+//        Thread r3 = new Thread(new ReadRun());
+////        Thread wt = new Thread(new WriteRun());
+//
+//        r1.start();
+//        r2.start();
+//        r3.start();
+////        wt.start();
+//
+//        c.countDown();
 
-        r1.start();
-        r2.start();
-        r3.start();
-//        wt.start();
+        Runnable r = ()->{
+            lock.lock();
+            try{
+                try {
+                    Thread.sleep(100000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }finally {
+                lock.unlock();
+            }
+        };
 
-        c.countDown();
+        Thread t1 = new Thread(r);
+        Thread t2 = new Thread(r);
 
-
+        t1.start();
+        t2.start();
     }
 }
