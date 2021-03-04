@@ -80,7 +80,7 @@ public class RedisLock extends AbstractQueuedSynchronizer {
             while (!tryLock(value)) {
                 try {
                     lock.lock();
-                    condition.await(expireTime,TimeUnit.MILLISECONDS);
+                    condition.await(expireTime, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
