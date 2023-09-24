@@ -16,7 +16,7 @@ public class NettyServer {
     public static void main(String[] args) throws Exception {
         ServerBootstrap bootstrap = new ServerBootstrap();
 
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
+        NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
 
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
 
