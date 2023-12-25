@@ -1,5 +1,6 @@
 package concurrent.pool;
 
+import concurrent.pool.source.SourceThreadPoolExecutor;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.*;
@@ -30,7 +31,7 @@ public class PoolTest {
             }
         };
 
-        ThreadPoolExecutor pool = new ThreadPoolExecutor(4, 10,
+        SourceThreadPoolExecutor pool = new SourceThreadPoolExecutor(4, 10,
                 60L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(5));
 
