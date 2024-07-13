@@ -1,4 +1,4 @@
-package excel.instance;
+package excel.instance.read;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.CellExtra;
@@ -18,16 +18,16 @@ import java.util.Map;
  * @author SoleRay
  */
 @Slf4j
-public class OARowDataListener implements ReadListener<OARowData> {
+public class OAReadRowDataListener implements ReadListener<OAReadRowData> {
 
-    private List<OARowData> cachedDataList = new ArrayList<>();
+    private List<OAReadRowData> cachedDataList = new ArrayList<>();
 
     private Map<Integer,Field> fieldMap = new HashMap<>();
 
-    private Map<String,List<OARowData>> dataMap = new HashMap<>();
+    private Map<String,List<OAReadRowData>> dataMap = new HashMap<>();
 
-    public OARowDataListener() {
-        Field[] fields = OARowData.class.getDeclaredFields();
+    public OAReadRowDataListener() {
+        Field[] fields = OAReadRowData.class.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             fields[i].setAccessible(true);
             fieldMap.put(i,fields[i]);
@@ -35,21 +35,20 @@ public class OARowDataListener implements ReadListener<OARowData> {
     }
 
     @Override
-    public void invoke(OARowData data, AnalysisContext context) {
+    public void invoke(OAReadRowData data, AnalysisContext context) {
         cachedDataList.add(data);
     }
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
-        for (OARowData oaRowData : cachedDataList) {
-            List<OARowData> personOaRowDataList = dataMap.get(oaRowData.getName());
-            if(personOaRowDataList == null){
-                personOaRowDataList = new ArrayList<>();
-                dataMap.put(oaRowData.getName(),personOaRowDataList);
+        for (OAReadRowData oaReadRowData : cachedDataList) {
+            List<OAReadRowData> personOaReadRowDataList = dataMap.get(oaReadRowData.getName());
+            if(personOaReadRowDataList == null){
+                personOaReadRowDataList = new ArrayList<>();
+                dataMap.put(oaReadRowData.getName(), personOaReadRowDataList);
             }
-            personOaRowDataList.add(oaRowData);
+            personOaReadRowDataList.add(oaReadRowData);
         }
-        System.out.println(dataMap);
     }
 
     @Override
@@ -76,15 +75,15 @@ public class OARowDataListener implements ReadListener<OARowData> {
      */
     private void processMergeData(CellExtra extra) {
         Field mergedColumnField = fieldMap.get(extra.getFirstColumnIndex());
-        OARowData mergedRowData = cachedDataList.get(extra.getFirstRowIndex()-1);
+        OAReadRowData mergedRowData = cachedDataList.get(extra.getFirstRowIndex()-1);
         Object mergedColumnValue = ReflectionUtils.getField(mergedColumnField, mergedRowData);
         for (int i = extra.getFirstRowIndex(); i <extra.getLastRowIndex() ; i++) {
-            OARowData oaRowData = cachedDataList.get(i);
-            ReflectionUtils.setField(mergedColumnField,oaRowData,mergedColumnValue);
+            OAReadRowData oaReadRowData = cachedDataList.get(i);
+            ReflectionUtils.setField(mergedColumnField, oaReadRowData,mergedColumnValue);
         }
     }
 
-    public Map<String, List<OARowData>> getDataMap() {
+    public Map<String, List<OAReadRowData>> getDataMap() {
         return dataMap;
     }
 }

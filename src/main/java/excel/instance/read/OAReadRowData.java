@@ -1,4 +1,4 @@
-package excel.instance;
+package excel.instance.read;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
@@ -17,7 +17,7 @@ import java.util.Date;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class OARowData {
+public class OAReadRowData {
     /**
      * 我自定义 转换器，不管数据库传过来什么 。我给他加上“自定义：”
      */
