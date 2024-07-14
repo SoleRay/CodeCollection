@@ -49,4 +49,7 @@ public class OAReadRowData {
     @ExcelProperty(index=9)
     @DateTimeFormat("HH:mm")
     private String lastAttendTime;
+
+    @ExcelProperty(index=10)
+    private String remark;
 }

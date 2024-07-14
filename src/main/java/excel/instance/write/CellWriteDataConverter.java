@@ -10,6 +10,7 @@ import com.alibaba.excel.write.metadata.style.WriteFont;
 import excel.ExcelConstans;
 import excel.instance.read.OAReadRowData;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import util.JsonUtils;
 
@@ -76,14 +77,19 @@ public class CellWriteDataConverter implements Converter<String> {
 
         //两个都没有，设置为旷工
         if(!isCheckOn && !isCheckOff){
-            writeCellData.setStringValue("旷工");
-            markCheckInError(writeCellStyle);
+            if(ExcelConstans.RemarkType.ALL_DAY_TAKE_OFF.equals(oaReadRowData.getRemark())){
+                writeCellData.setStringValue("上班：请假\n下班：请假");
+                markCommonDiffColor(writeCellStyle);
+            }else {
+                writeCellData.setStringValue("旷工");
+                markSeriousDiffColor(writeCellStyle);
+            }
             return;
         }
 
         //有一个，字体标红
         if(!isCheckOn || !isCheckOff){
-            markCheckInError(writeCellStyle);
+            markSeriousDiffColor(writeCellStyle);
             return;
         }
 
@@ -91,10 +97,7 @@ public class CellWriteDataConverter implements Converter<String> {
         checkWorkHourEnough(oaReadRowData, writeCellData);
     }
 
-    private void markCheckInError(WriteCellStyle writeCellStyle) {
-        writeCellStyle.getWriteFont().setBold(true);
-        writeCellStyle.getWriteFont().setColor(IndexedColors.RED.getIndex());
-    }
+
 
     private void checkOnWeekendAndHolidays(OAReadRowData oaReadRowData, WriteCellData<String> writeCellData) {
         boolean isCheckOn = StringUtils.isNotBlank(oaReadRowData.getFisrtAttendTime());
@@ -104,18 +107,17 @@ public class CellWriteDataConverter implements Converter<String> {
         if(isCheckOn || isCheckOff){
 
             //只要有工时，就底色打上黄色
-            writeCellData.getWriteCellStyle().setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
-
+            writeCellData.getWriteCellStyle().setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+            writeCellData.getWriteCellStyle().setFillPatternType(FillPatternType.SOLID_FOREGROUND);
             if(isCheckOn && isCheckOff){
                 //上下班工时都有，检查工时是否充足
                 checkWorkHourEnough(oaReadRowData, writeCellData);
             }else {
                 //上下班工时缺少，颜色标红
-                markCheckInError(writeCellData.getWriteCellStyle());
+                markSeriousDiffColor(writeCellData.getWriteCellStyle());
             }
         }
     }
-
 
 
     private void initWriteCellStyle(WriteCellData<String> writeCellData) {
@@ -132,10 +134,7 @@ public class CellWriteDataConverter implements Converter<String> {
         LocalTime clockOffTime = LocalTime.parse(oaReadRowData.getLastAttendTime());
         Duration duration = Duration.between(clockOnTime, clockOffTime);
         if(duration.toHours()< 9){
-            WriteCellStyle writeCellStyle = writeCellData.getWriteCellStyle();
-            WriteFont writeFont = writeCellStyle.getWriteFont();
-            writeFont.setColor(IndexedColors.PLUM.getIndex());
-            writeFont.setBold(Boolean.TRUE);
+            markCommonDiffColor(writeCellData.getWriteCellStyle());
         }
     }
 
@@ -151,6 +150,16 @@ public class CellWriteDataConverter implements Converter<String> {
             cellValue = cellValue + "下班：" + oaReadRowData.getLastAttendTime();
         }
         return cellValue;
+    }
+
+    private void markCommonDiffColor(WriteCellStyle writeCellStyle) {
+        writeCellStyle.getWriteFont().setBold(true);
+        writeCellStyle.getWriteFont().setColor(IndexedColors.PLUM.getIndex());
+    }
+
+    private void markSeriousDiffColor(WriteCellStyle writeCellStyle) {
+        writeCellStyle.getWriteFont().setBold(true);
+        writeCellStyle.getWriteFont().setColor(IndexedColors.RED.getIndex());
     }
 
 }

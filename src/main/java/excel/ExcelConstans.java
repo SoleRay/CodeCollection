@@ -11,4 +11,14 @@ public interface ExcelConstans {
 
         String HOLIDAYS = "节假日";
     }
+
+    interface RemarkType {
+        String MORNING_TAKE_OFF = "请上午半天假";
+
+        String AFTERNOON_TAKE_OFF = "请下午半天假";
+
+        String ALL_DAY_TAKE_OFF = "请假一天";
+
+        String ALL_DAY_EXTRA_WORK = "加班一天";
+    }
 }
