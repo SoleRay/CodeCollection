@@ -30,26 +30,25 @@ public class OATransfer {
         OAReadRowDataListener readListener = new OAReadRowDataListener();
         OAWriteRowDataHandler oaWriteRowDataHandler = new OAWriteRowDataHandler();
         EasyExcel.read(readFile, OAReadRowData.class, readListener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
-//        EasyExcel.write(writeFile, OAWriteRowData.class)
-//                .registerWriteHandler(new CustomCellWeightWeightConfig())
-//                .sheet("4月-new").doWrite(()->oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()));
+        EasyExcel.write(writeFile, OAWriteRowData.class).withTemplate(templateFile).needHead(false)
+                .sheet("4月-new").doWrite(()->oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()));
 
 
-        try (ExcelWriter excelWriter = EasyExcel.write(writeFile, OAWriteRowData.class)
-                     .registerWriteHandler(new CustomCellWeightWeightConfig()).withTemplate(templateFile)
-                     .build()) {
-
-            // 设置自动换行，前提内容中需要加「\n」才有效
-            WriteCellStyle writeCellStyle = new WriteCellStyle();
-            writeCellStyle.setWrapped(true);
-
-            HorizontalCellStyleStrategy cellStyleStrategy = new HorizontalCellStyleStrategy(null, writeCellStyle);
-            WriteSheet writeSheet = EasyExcel.writerSheet("7月").registerWriteHandler(cellStyleStrategy).build();
-
-            excelWriter.fill(oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()), writeSheet);
-
-            excelWriter.finish();
-        }
+//        try (ExcelWriter excelWriter = EasyExcel.write(writeFile, OAWriteRowData.class)
+//                     .registerWriteHandler(new CustomCellWeightWeightConfig()).withTemplate(templateFile).needHead(false)
+//                     .build()) {
+//
+//            // 设置自动换行，前提内容中需要加「\n」才有效
+//            WriteCellStyle writeCellStyle = new WriteCellStyle();
+//            writeCellStyle.setWrapped(true);
+//
+//            HorizontalCellStyleStrategy cellStyleStrategy = new HorizontalCellStyleStrategy(null, writeCellStyle);
+//            WriteSheet writeSheet = EasyExcel.writerSheet("4月-new").registerWriteHandler(cellStyleStrategy).build();
+//
+//            excelWriter.write(oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()), writeSheet);
+////            excelWriter.fill(oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()), writeSheet);
+////            excelWriter.finish();
+//        }
     }
 
 

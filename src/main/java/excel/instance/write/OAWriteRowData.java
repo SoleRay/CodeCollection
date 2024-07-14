@@ -2,6 +2,10 @@ package excel.instance.write;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
+import com.alibaba.excel.annotation.write.style.*;
+import com.alibaba.excel.enums.BooleanEnum;
+import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
+import com.alibaba.excel.enums.poi.VerticalAlignmentEnum;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,10 +20,13 @@ import java.util.Date;
 @Getter
 @Setter
 @EqualsAndHashCode
+@ContentRowHeight(55)
+@HeadRowHeight(36)
+@ColumnWidth(13)
+@ContentStyle(horizontalAlignment=HorizontalAlignmentEnum.CENTER,verticalAlignment = VerticalAlignmentEnum.CENTER,wrapped = BooleanEnum.TRUE)
+@ContentFontStyle(fontName = "微软雅黑")
 public class OAWriteRowData {
-    /**
-     * 我自定义 转换器，不管数据库传过来什么 。我给他加上“自定义：”
-     */
+
     @ExcelProperty(index=0)
     private String name;
 
