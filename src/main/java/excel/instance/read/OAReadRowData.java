@@ -10,17 +10,14 @@ import lombok.Setter;
 import java.util.Date;
 
 /**
- * 基础数据类.这里的排序和excel里面的排序一致
  *
- * @author Jiaju Zhuang
+ * @author SoleRay
  **/
 @Getter
 @Setter
 @EqualsAndHashCode
 public class OAReadRowData {
-    /**
-     * 我自定义 转换器，不管数据库传过来什么 。我给他加上“自定义：”
-     */
+
     @ExcelProperty(index=0)
     private String name;
 

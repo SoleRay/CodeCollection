@@ -35,96 +35,96 @@ public class OAWriteRowData {
     @ExcelProperty(index=1)
     private int totalAttendDay;
 
-    @ExcelProperty(index=2)
+    @ExcelProperty(index=2,converter = CellWriteDataConverter.class)
     private String day1;
 
-    @ExcelProperty(index=3)
+    @ExcelProperty(index=3,converter = CellWriteDataConverter.class)
     private String day2;
 
-    @ExcelProperty(index=4)
+    @ExcelProperty(index=4,converter = CellWriteDataConverter.class)
     private String day3;
 
-    @ExcelProperty(index=5)
+    @ExcelProperty(index=5,converter = CellWriteDataConverter.class)
     private String day4;
 
-    @ExcelProperty(index=6)
+    @ExcelProperty(index=6,converter = CellWriteDataConverter.class)
     private String day5;
 
-    @ExcelProperty(index=7)
+    @ExcelProperty(index=7,converter = CellWriteDataConverter.class)
     private String day6;
 
-    @ExcelProperty(index=8)
+    @ExcelProperty(index=8,converter = CellWriteDataConverter.class)
     private String day7;
 
-    @ExcelProperty(index=9)
+    @ExcelProperty(index=9,converter = CellWriteDataConverter.class)
     private String day8;
 
-    @ExcelProperty(index=10)
+    @ExcelProperty(index=10,converter = CellWriteDataConverter.class)
     private String day9;
 
-    @ExcelProperty(index=11)
+    @ExcelProperty(index=11,converter = CellWriteDataConverter.class)
     private String day10;
 
-    @ExcelProperty(index=12)
+    @ExcelProperty(index=12,converter = CellWriteDataConverter.class)
     private String day11;
 
-    @ExcelProperty(index=13)
+    @ExcelProperty(index=13,converter = CellWriteDataConverter.class)
     private String day12;
 
-    @ExcelProperty(index=14)
+    @ExcelProperty(index=14,converter = CellWriteDataConverter.class)
     private String day13;
 
-    @ExcelProperty(index=15)
+    @ExcelProperty(index=15,converter = CellWriteDataConverter.class)
     private String day14;
 
-    @ExcelProperty(index=16)
+    @ExcelProperty(index=16,converter = CellWriteDataConverter.class)
     private String day15;
 
-    @ExcelProperty(index=17)
+    @ExcelProperty(index=17,converter = CellWriteDataConverter.class)
     private String day16;
 
-    @ExcelProperty(index=18)
+    @ExcelProperty(index=18,converter = CellWriteDataConverter.class)
     private String day17;
 
-    @ExcelProperty(index=19)
+    @ExcelProperty(index=19,converter = CellWriteDataConverter.class)
     private String day18;
 
-    @ExcelProperty(index=20)
+    @ExcelProperty(index=20,converter = CellWriteDataConverter.class)
     private String day19;
 
-    @ExcelProperty(index=21)
+    @ExcelProperty(index=21,converter = CellWriteDataConverter.class)
     private String day20;
 
-    @ExcelProperty(index=22)
+    @ExcelProperty(index=22,converter = CellWriteDataConverter.class)
     private String day21;
 
-    @ExcelProperty(index=23)
+    @ExcelProperty(index=23,converter = CellWriteDataConverter.class)
     private String day22;
 
-    @ExcelProperty(index=24)
+    @ExcelProperty(index=24,converter = CellWriteDataConverter.class)
     private String day23;
 
-    @ExcelProperty(index=25)
+    @ExcelProperty(index=25,converter = CellWriteDataConverter.class)
     private String day24;
 
-    @ExcelProperty(index=26)
+    @ExcelProperty(index=26,converter = CellWriteDataConverter.class)
     private String day25;
 
-    @ExcelProperty(index=27)
+    @ExcelProperty(index=27,converter = CellWriteDataConverter.class)
     private String day26;
 
-    @ExcelProperty(index=28)
+    @ExcelProperty(index=28,converter = CellWriteDataConverter.class)
     private String day27;
 
-    @ExcelProperty(index=29)
+    @ExcelProperty(index=29,converter = CellWriteDataConverter.class)
     private String day28;
 
-    @ExcelProperty(index=30)
+    @ExcelProperty(index=30,converter = CellWriteDataConverter.class)
     private String day29;
 
-    @ExcelProperty(index=31)
+    @ExcelProperty(index=31,converter = CellWriteDataConverter.class)
     private String day30;
 
-    @ExcelProperty(index=32)
+    @ExcelProperty(index=32,converter = CellWriteDataConverter.class)
     private String day31;
 }

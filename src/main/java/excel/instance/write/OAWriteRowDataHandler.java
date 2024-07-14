@@ -1,10 +1,17 @@
 package excel.instance.write;
 
+import com.alibaba.excel.metadata.data.WriteCellData;
+import com.alibaba.excel.write.metadata.style.WriteCellStyle;
+import com.alibaba.excel.write.metadata.style.WriteFont;
 import excel.instance.read.OAReadRowData;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.springframework.util.ReflectionUtils;
+import util.JsonUtils;
 
 import java.lang.reflect.Field;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,14 +45,7 @@ public class OAWriteRowDataHandler {
                     oaWriteRowData.setTotalAttendDay(oaReadRowData.getTotalAttendDay());
                 }
 
-                if(StringUtils.isNotBlank(oaReadRowData.getFisrtAttendTime())){
-                    builder.append("上班：").append(oaReadRowData.getFisrtAttendTime()).append("\n");
-                }
-                if(StringUtils.isNotBlank(oaReadRowData.getLastAttendTime())){
-                    builder.append("下班：").append(oaReadRowData.getLastAttendTime());
-                }
-
-                ReflectionUtils.setField(fieldMap.get(i+2),oaWriteRowData,builder.toString());
+                ReflectionUtils.setField(fieldMap.get(i+2),oaWriteRowData, JsonUtils.toJsonString(oaReadRowData));
                 builder.setLength(0);
             }
             writeRowDataList.add(oaWriteRowData);

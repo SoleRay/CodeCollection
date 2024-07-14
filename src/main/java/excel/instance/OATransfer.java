@@ -23,8 +23,7 @@ public class OATransfer {
         OAReadRowDataListener readListener = new OAReadRowDataListener();
         OAWriteRowDataHandler oaWriteRowDataHandler = new OAWriteRowDataHandler();
         EasyExcel.read(readFile, OAReadRowData.class, readListener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
-        EasyExcel.write(writeFile, OAWriteRowData.class).withTemplate(templateFile)
-                .registerWriteHandler(new OACellWriteHandler())
+        EasyExcel.write(writeFile, OAWriteRowData.class).withTemplate(templateFile).inMemory(true)
                 .sheet("4月-new").needHead(false).doWrite(()->oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()));
 
 
