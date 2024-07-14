@@ -4,6 +4,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.alibaba.excel.annotation.write.style.*;
 import com.alibaba.excel.enums.BooleanEnum;
+import com.alibaba.excel.enums.poi.BorderStyleEnum;
 import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import com.alibaba.excel.enums.poi.VerticalAlignmentEnum;
 import lombok.EqualsAndHashCode;
@@ -23,7 +24,8 @@ import java.util.Date;
 @ContentRowHeight(55)
 @HeadRowHeight(36)
 @ColumnWidth(13)
-@ContentStyle(horizontalAlignment=HorizontalAlignmentEnum.CENTER,verticalAlignment = VerticalAlignmentEnum.CENTER,wrapped = BooleanEnum.TRUE)
+@ContentStyle(horizontalAlignment=HorizontalAlignmentEnum.CENTER,verticalAlignment = VerticalAlignmentEnum.CENTER,wrapped = BooleanEnum.TRUE,
+borderLeft = BorderStyleEnum.THIN,borderRight = BorderStyleEnum.THIN,borderTop = BorderStyleEnum.THIN,borderBottom = BorderStyleEnum.THIN)
 @ContentFontStyle(fontName = "微软雅黑")
 public class OAWriteRowData {
 
