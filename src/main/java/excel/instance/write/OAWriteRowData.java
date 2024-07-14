@@ -23,10 +23,10 @@ import java.util.Date;
 @EqualsAndHashCode
 @ContentRowHeight(55)
 @HeadRowHeight(36)
-@ColumnWidth(13)
+@ColumnWidth(14)
 @ContentStyle(horizontalAlignment=HorizontalAlignmentEnum.CENTER,verticalAlignment = VerticalAlignmentEnum.CENTER,wrapped = BooleanEnum.TRUE,
 borderLeft = BorderStyleEnum.THIN,borderRight = BorderStyleEnum.THIN,borderTop = BorderStyleEnum.THIN,borderBottom = BorderStyleEnum.THIN)
-@ContentFontStyle(fontName = "微软雅黑")
+@ContentFontStyle(fontName = "微软雅黑",fontHeightInPoints =12 )
 public class OAWriteRowData {
 
     @ExcelProperty(index=0)

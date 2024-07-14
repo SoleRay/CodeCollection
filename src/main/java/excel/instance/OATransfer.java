@@ -1,19 +1,12 @@
 package excel.instance;
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.enums.CellExtraTypeEnum;
-import com.alibaba.excel.write.metadata.WriteSheet;
-import com.alibaba.excel.write.metadata.fill.FillConfig;
-import com.alibaba.excel.write.metadata.style.WriteCellStyle;
-import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import excel.instance.read.OAReadRowData;
 import excel.instance.read.OAReadRowDataListener;
-import excel.instance.write.CustomCellWeightWeightConfig;
+import excel.instance.write.OACellWriteHandler;
 import excel.instance.write.OAWriteRowData;
 import excel.instance.write.OAWriteRowDataHandler;
-
-import java.util.Map;
 
 public class OATransfer {
 
@@ -30,8 +23,9 @@ public class OATransfer {
         OAReadRowDataListener readListener = new OAReadRowDataListener();
         OAWriteRowDataHandler oaWriteRowDataHandler = new OAWriteRowDataHandler();
         EasyExcel.read(readFile, OAReadRowData.class, readListener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
-        EasyExcel.write(writeFile, OAWriteRowData.class).withTemplate(templateFile).needHead(false)
-                .sheet("4月-new").doWrite(()->oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()));
+        EasyExcel.write(writeFile, OAWriteRowData.class).withTemplate(templateFile)
+                .registerWriteHandler(new OACellWriteHandler())
+                .sheet("4月-new").needHead(false).doWrite(()->oaWriteRowDataHandler.convertToWriteData(readListener.getDataMap()));
 
 
 //        try (ExcelWriter excelWriter = EasyExcel.write(writeFile, OAWriteRowData.class)

@@ -39,10 +39,10 @@ public class OAWriteRowDataHandler {
                 }
 
                 if(StringUtils.isNotBlank(oaReadRowData.getFisrtAttendTime())){
-                    builder.append("上班: ").append(oaReadRowData.getFisrtAttendTime()).append("\n");
+                    builder.append("上班：").append(oaReadRowData.getFisrtAttendTime()).append("\n");
                 }
                 if(StringUtils.isNotBlank(oaReadRowData.getLastAttendTime())){
-                    builder.append("下班: ").append(oaReadRowData.getLastAttendTime());
+                    builder.append("下班：").append(oaReadRowData.getLastAttendTime());
                 }
 
                 ReflectionUtils.setField(fieldMap.get(i+2),oaWriteRowData,builder.toString());
